@@ -1,0 +1,15 @@
+﻿<Window x:Class="ScreenBroadcaster.Server.ServerMainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="318.421" Width="343.421" Initialized="Window_Initialized">
+    <Grid>
+        <Button x:Name="startButton" x:FieldModifier="private" Content="Start" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="100" />
+        <Button x:Name="stopButton" x:FieldModifier="private" Content="Stop" HorizontalAlignment="Left" Margin="225,10,0,0" VerticalAlignment="Top" Width="100" IsEnabled="False"/>
+        <RichTextBox x:Name="consoleRichTextBox" x:FieldModifier="private" HorizontalAlignment="Left" Height="243" Margin="10,35,0,0" VerticalAlignment="Top" Width="315">
+            <FlowDocument>
+                <Paragraph>
+                </Paragraph>
+            </FlowDocument>
+        </RichTextBox>
+    </Grid>
+</Window>
