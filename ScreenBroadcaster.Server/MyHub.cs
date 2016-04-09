@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using Microsoft.AspNet.SignalR;
 
 namespace ScreenBroadcaster.Server
@@ -14,10 +15,10 @@ namespace ScreenBroadcaster.Server
         {
             Clients.All.addMessage(name, message);
         }
-        public void Send(string message)
-        {
-            Clients.Caller.addMessage("[Me]", message);
-        }
+        //public void Send(string message)
+        //{
+        //    Clients.Caller.addMessage("[Me]", message);
+        //}
 
         public void SendPeriodic(string message)
         {
@@ -26,19 +27,19 @@ namespace ScreenBroadcaster.Server
 
 
 
-
-
         public override Task OnConnected()
         {
-            Program.MainServerWindow.WriteToConsole(
-                string.Format("Client connected: {0}", Context.ConnectionId));
-            
+            //Use Application.Current.Dispatcher to access UI thread from outside the MainWindow class
+            Application.Current.Dispatcher.Invoke(() =>
+                ((ServerMainWindow)Application.Current.MainWindow).ServerController.WriteToConsole("Client connected: " + Context.ConnectionId));
+
             return base.OnConnected();
         }
         public override Task OnDisconnected()
         {
-            Program.MainServerWindow.WriteToConsole(
-                string.Format("Client disconnected: {0}", Context.ConnectionId));
+            //Use Application.Current.Dispatcher to access UI thread from outside the MainWindow class
+            Application.Current.Dispatcher.Invoke(() =>
+                ((ServerMainWindow)Application.Current.MainWindow).ServerController.WriteToConsole("Client disconnected: " + Context.ConnectionId));
 
             return base.OnDisconnected();
         }
