@@ -103,6 +103,12 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ScreenBroadcaster.Common\ScreenBroadcaster.Common.csproj">
+      <Project>{b1af9018-b6a2-4678-822f-d7a15c99c46e}</Project>
+      <Name>ScreenBroadcaster.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

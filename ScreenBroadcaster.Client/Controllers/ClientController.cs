@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.AspNet.SignalR.Client;
+using ScreenBroadcaster.Common;
 
 namespace ScreenBroadcaster.Client.Controllers
 {
@@ -15,87 +17,43 @@ namespace ScreenBroadcaster.Client.Controllers
         private const string    SERVER_URI = "http://localhost:8080/signalr";
 
         // Instanse members.
-        private IntStriker      _intStriker;
-        //private NumberGenerator _numGen = new NumberGenerator();
+        private ClientMainWindow                _clientMainWindow;
+        private IntStriker                      _intStriker;
 
-        public string           UserName    { get; set; }
-        public IHubProxy        HubProxy    { get; set; }
-        public HubConnection    Connection  { get; set; }
+        public User                             User                { get; private set; }
+        public Guid?                            BroadcasterID       { get; private set; }
+        public ServerToClientCommandsExecutor   CommandsExecutor    { get; private set; }
+
+        public IHubProxy                        CommandsHubProxy    { get; private set; }
+        public IHubProxy                        PicturesHubProxy    { get; private set; }
+        public HubConnection                    Connection          { get; private set; }
 
 
-        private ClientMainWindow _clientMainWindow;
 
         public ClientController(ClientMainWindow clientMainWindow)
         {
             _clientMainWindow   = clientMainWindow;
-            subscribeForClientMainWindowEvents();
+            setClientMainWindowEventsHandlers();
 
             _intStriker     = new IntStriker(500);
+
+
+            User                = new User();
+            BroadcasterID       = null;
+            CommandsExecutor    = new ServerToClientCommandsExecutor();
         }
 
-        private void subscribeForClientMainWindowEvents()
+        private void setClientMainWindowEventsHandlers()
         {
-            _clientMainWindow.SignInButton.Click += SignInButton_Click;
-            _clientMainWindow.SendAllButton.Click += SendAllButton_Click;
-            _clientMainWindow.Closing += _clientMainWindow_Closing;
-            _clientMainWindow.StartStopGenButton.Click += StartStopGenButton_Click;
+            _clientMainWindow.Closing                       += _clientMainWindow_Closing;
+            _clientMainWindow.UserNameTextBox.TextChanged   += UserNameTextBox_TextChanged;
+            _clientMainWindow.BroadcasterIdTextBox.TextChanged += BroadcasterIdTextBox_TextChanged;
+
+            _clientMainWindow.BroadcastButton.Click += BroadcastButton_Click;
+            _clientMainWindow.ReceiveButton.Click += ReceiveButton_Click;
         }
-
-        private async void ConnectAsync()
-        {
-            Connection = new HubConnection(SERVER_URI);
-            Connection.Closed += Connection_Closed;
-
-            HubProxy = Connection.CreateHubProxy("MyHub");
-
-            HubProxy.On<string, string>("addMessage", (name, message) =>
-                _clientMainWindow.Dispatcher.Invoke(() =>
-                    _clientMainWindow.ConsoleRichTextBox.AppendText(string.Format("{0}: {1}\r", name, message))
-                    )
-                );
-
-            try
-            {
-                await Connection.Start();
-            }
-            catch (HttpRequestException)
-            {
-                _clientMainWindow.StatusText.Content = "Unable to connect to server: Start server before connecting clients.";
-                return;
-            }
-
-            //Show chat UI; hide login UI
-            _clientMainWindow.SignInPanel.Visibility    = Visibility.Collapsed;
-            _clientMainWindow.ChatPanel.Visibility      = Visibility.Visible;
-            _clientMainWindow.SendAllButton.IsEnabled   = true;
-            _clientMainWindow.ConsoleRichTextBox.AppendText(
-                string.Format("Connected to server at {0} \r", SERVER_URI));
-            _clientMainWindow.MessageTextBox.Focus();
-        }
-
 
         // Events handlers.
-        private void StartStopGenButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_intStriker.IsDisposed)
-            {
-                _intStriker.NewPictureGenerated +=
-                    new EventHandler<NewPictureEventArgs>((newSender, newE) =>
-                    {
-                        _clientMainWindow.Dispatcher.Invoke(() => _clientMainWindow.NumDisplayLabel.Content =
-                            string.Format("New picture: {0}", newE.NewPicture.ToString()));
-                    });
-
-                _intStriker.Start();
-                _clientMainWindow.StartStopGenButton.Content = "Stop Generation";
-            }
-            else
-            {
-                _intStriker.Stop();
-                _clientMainWindow.StartStopGenButton.Content = "Start Generation";
-            }
-        }
-
         private void _clientMainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (Connection != null)
@@ -110,34 +68,215 @@ namespace ScreenBroadcaster.Client.Controllers
             }
         }
 
-        private void SignInButton_Click(object sender, RoutedEventArgs e)
+        private void Connection_Closed()
         {
-            UserName = _clientMainWindow.UserNameTextBox.Text;
+            // Show login UI; hide broadcast and receive UI.
+            var dispatcher = Application.Current.Dispatcher;
 
-            if (!string.IsNullOrEmpty(UserName))
+            dispatcher.Invoke(() =>
             {
-                _clientMainWindow.StatusText.Visibility = Visibility.Visible;
-                _clientMainWindow.StatusText.Content = "Connecting to server...";
+                _clientMainWindow.BroadcastUI.Visibility = Visibility.Collapsed;
+                _clientMainWindow.ReceiveUI.Visibility = Visibility.Collapsed;
+            });
+
+            dispatcher.Invoke(() => _clientMainWindow.SignInUI.Visibility = Visibility.Visible);
+        }
+
+
+        private async void BroadcastButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (isUserNameValid())
+            {
                 ConnectAsync();
+
+                //Thread.Sleep(2000);
+
+                if (Connection.State == ConnectionState.Connected)
+                {
+                    var param = new CommandParameter();
+                    param["user"]     = User;
+                    
+                    await CommandsHubProxy.Invoke(
+                        "ExecuteCommand", ClientToServerCommand.RegisterNewBroadcaster, param);
+                    
+                    activateSignInUI(false);
+                    activateBroadcastUI(true);
+                }
+            }
+        }
+        
+        private void ReceiveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (isUserNameValid() && isBroadcasterIDValid())
+            {
+                ConnectAsync();
+
+                if (Connection.State == ConnectionState.Connected)
+                {
+                    activateSignInUI(false);
+                    activateReceiveUI(true);
+                }
             }
         }
 
-        private void SendAllButton_Click(object sender, RoutedEventArgs e)
+        private void UserNameTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
-            HubProxy.Invoke("Send", UserName, _clientMainWindow.MessageTextBox.Text);
-            _clientMainWindow.MessageTextBox.Text = string.Empty;
-            _clientMainWindow.MessageTextBox.Focus();
+            User.Name = _clientMainWindow.UserNameTextBox.Text;
+        }
+        private void BroadcasterIdTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            Guid broadcasterID = default(Guid);            
+            if (Guid.TryParse(_clientMainWindow.BroadcasterIdTextBox.Text, out broadcasterID))
+            {
+                BroadcasterID = broadcasterID;
+            }
+            else
+            {
+                BroadcasterID = null;
+            }
         }
 
-        private void Connection_Closed()
+        // Other methods.
+        private async void ConnectAsync()
         {
-            //Show login UI; hide chat UI
-            var dispatcher = Application.Current.Dispatcher;
+            Connection = new HubConnection(SERVER_URI);
+            Connection.Closed += Connection_Closed;
 
-            dispatcher.Invoke(() => _clientMainWindow.ChatPanel.Visibility      = Visibility.Collapsed);
-            dispatcher.Invoke(() => _clientMainWindow.SignInPanel.Visibility    = Visibility.Visible);
-            dispatcher.Invoke(() => _clientMainWindow.SendAllButton.IsEnabled   = false);
-            dispatcher.Invoke(() => _clientMainWindow.StatusText.Content        = "You have been disconnected.");
+            setupCommandsHub();
+            //setupPicturesHub();
+
+            try
+            {
+                await Connection.Start();
+            }
+            catch (HttpRequestException)
+            {
+                string text = "Unable to connect to server: Start server before connecting clients.";
+                string caption = "Server connection error!";
+                MessageBox.Show(text, caption);
+
+                return;
+            }
+
+            //Show chat UI; hide login UI.
+        }
+
+        private void setupCommandsHub()
+        {
+            CommandsHubProxy = Connection.CreateHubProxy("CommandsHub");
+
+            CommandsHubProxy.On<ServerToClientCommand, CommandParameter>(
+                "ExecuteCommand", (command, param) => CommandsExecutor.ExecuteCommand(command, param));
+        }
+        private void setupPicturesHub()
+        {
+            PicturesHubProxy = Connection.CreateHubProxy("PicturesHub");
+
+            // TODO: implement.
+        }
+
+        private bool isUserNameValid()
+        {
+            if (!string.IsNullOrEmpty(User.Name))
+            {
+                return true;
+            }
+            else
+            {
+                string text = "You must specify user name.";
+                string caption = "User name error!";
+                MessageBox.Show(text, caption);
+                
+                return false;
+            }
+        }
+        private bool isBroadcasterIDValid()
+        {
+            if (BroadcasterID.HasValue)
+            {
+                return true;
+            }
+            else
+            {
+                string text = "You must specify broadcaster ID.";
+                string caption = "Broadcaster ID error!";
+                MessageBox.Show(text, caption);
+
+                return false;
+            }
+        }
+
+        private void activateSignInUI(bool shouldActivate)
+        {
+            if (shouldActivate)
+            {
+                _clientMainWindow.SignInUI.Visibility = Visibility.Visible;
+                _clientMainWindow.UserNameTextBox.IsReadOnly = false;
+            }
+            else
+            {
+                _clientMainWindow.SignInUI.Visibility = Visibility.Collapsed;
+                _clientMainWindow.UserNameTextBox.IsReadOnly = true;
+            }
+        }
+        private void activateBroadcastUI(bool shouldActivate)
+        {
+            if (shouldActivate)
+            {
+                _clientMainWindow.BroadcastUI.Visibility = Visibility.Visible;
+                _clientMainWindow.UserIDTextBox.Text = User.ID.ToString();
+            }
+            else
+            {
+                _clientMainWindow.BroadcastUI.Visibility = Visibility.Collapsed;
+                _clientMainWindow.UserIDTextBox.Text = string.Empty;
+            }
+        }
+        private void activateReceiveUI(bool shouldActivate)
+        {
+            if (shouldActivate)
+            {
+                _clientMainWindow.ReceiveUI.Visibility = Visibility.Visible;
+                _clientMainWindow.UserIDTextBox.Text = User.ID.ToString();
+                _clientMainWindow.BroadcasterIDForReceiverTextBox.Text = BroadcasterID.Value.ToString();
+            }
+            else
+            {
+                _clientMainWindow.ReceiveUI.Visibility = Visibility.Collapsed;
+                _clientMainWindow.UserIDTextBox.Text = string.Empty;
+                _clientMainWindow.BroadcasterIDForReceiverTextBox.Text = null;
+            }
+        }
+
+        public class ServerToClientCommandsExecutor
+        {
+            private IDictionary<ServerToClientCommand, Action<CommandParameter>> _handlers;
+
+            public ServerToClientCommandsExecutor()
+            {
+                _handlers = setupHandlers();
+            }
+
+            private IDictionary<
+                ServerToClientCommand, Action<CommandParameter>> setupHandlers()
+            {
+                var handlers = new Dictionary<ServerToClientCommand, Action<CommandParameter>>();
+
+                handlers[ServerToClientCommand.ReportSuccessfulBcasterRegistration] =
+                    new Action<CommandParameter>((param) =>
+                        {
+                            string text = "You have been successfully registered as a Broadcaster.";
+                            string caption = "Registration succeeded!";
+                            MessageBox.Show(text, caption);
+                        });
+
+                return handlers;
+            }
+
+            public void ExecuteCommand(ServerToClientCommand command, CommandParameter param)
+            {
+                _handlers[command](param);
+            }
         }
     }
 }

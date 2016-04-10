@@ -3,23 +3,104 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="350" Width="525" ResizeMode="NoResize" Initialized="Window_Initialized">
     <Grid>
-        <StackPanel x:Name="signInPanel" x:FieldModifier="private" Margin="10,0" MaxWidth="550" Visibility="Visible">
-            <Label Content="Enter user name:"/>
-            <Grid>
-                <TextBox x:Name="UserNameTextBox" Height="20" Margin="0,0,80,0"/>
-                <Button x:Name="signInButton" x:FieldModifier="private" Content="Sign In" Width="75" HorizontalAlignment="Right"/>
-            </Grid>
+        <StackPanel x:Name="commonUI" x:FieldModifier="private" Height="40" HorizontalAlignment="Stretch" VerticalAlignment="Top" Orientation="Horizontal">
+            <Label Content="Your name:" 
+                   HorizontalAlignment="Center" 
+                   VerticalAlignment="Center" />
 
-            <Label x:Name="statusText" x:FieldModifier="private" Visibility="Collapsed" HorizontalAlignment="Center" Margin="0,10"/>
-            <Button Name="startStopGenButton" x:FieldModifier="private" Content="Start Generation" />
-            <Label  Name="numDisplayLabel" x:FieldModifier="private" Content="0" TextBlock.TextAlignment="Center" />
+            <TextBox x:Name="userNameTextBox" x:FieldModifier="private" 
+                     HorizontalAlignment="Center" 
+                     VerticalAlignment="Center" 
+                     TextWrapping="Wrap"  
+                     Width="150"/>
+            
+            <Label Content="Your ID:" 
+                   HorizontalAlignment="Center" 
+                   VerticalAlignment="Center" />
+
+            <TextBox x:Name="userIDTextBox" x:FieldModifier="private"
+                     IsReadOnly="True"
+                     HorizontalAlignment="Center" 
+                     VerticalAlignment="Center" 
+                     TextWrapping="Wrap"  
+                     Width="150"/>
         </StackPanel>
-        <StackPanel x:Name="chatPanel" x:FieldModifier="private" Margin="10" MaxWidth="550" Visibility="Collapsed">
-            <Grid>
-                <TextBox x:Name="messageTextBox" x:FieldModifier="private" Height="20" TextWrapping="Wrap" Margin="0,0,160,0"/>
-                <Button x:Name="sendAllButton" x:FieldModifier="private" Content="Send All" Width="75" Height="20" IsDefault="True" IsEnabled="False" Margin="424,0,0,0" />
-            </Grid>
-            <RichTextBox x:Name="consoleRichTextBox" x:FieldModifier="private" HorizontalAlignment="Left" Height="461" ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="0,10" IsReadOnly="True"/>
-        </StackPanel>
+        
+
+        <Grid x:Name="signInUI" x:FieldModifier="private" 
+              Margin="0,40,0,0" 
+              Visibility="Visible">
+            
+            <Button x:Name="broadcastButton" x:FieldModifier="private" 
+                    Content="Broadcast" 
+                    VerticalAlignment="Top" 
+                    Width="75" Margin="106,57,328,0" />
+            
+            <StackPanel Width="160" Margin="300,0,0,0">
+                <Label Content="Broadcaster ID:" 
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Center" />
+                <TextBox x:Name="broadcasterIdTextBox" x:FieldModifier="private" 
+                        HorizontalAlignment="Center" 
+                        VerticalAlignment="Center" 
+                        TextWrapping="Wrap" 
+                        Height="30" 
+                        Width="150"/>
+                <Button x:Name="receiveButton" x:FieldModifier="private" 
+                    Content="Receive" 
+                    VerticalAlignment="Top" 
+                    Width="75" />
+
+            </StackPanel>
+        </Grid>
+        <Grid x:Name="broadcastUI" x:FieldModifier="private" 
+              Margin="0,40,0,0" 
+              Visibility="Collapsed">
+            
+            <StackPanel Orientation="Horizontal">
+
+                <Button x:Name="stopBroadcastButton" x:FieldModifier="private" 
+                        Content="Stop Broadcast" 
+                        Margin="10" 
+                        HorizontalAlignment="Left" 
+                        VerticalAlignment="Top" 
+                        Width="120" 
+                        Height="30"/>
+            </StackPanel>
+        </Grid>
+        <Grid x:Name="receiveUI" x:FieldModifier="private" 
+              Margin="0,40,0,0" 
+              Visibility="Collapsed">
+            
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Broadcaster ID:"   
+                       Margin="10" 
+                       HorizontalAlignment="Left" 
+                       VerticalAlignment="Top"/>
+                <TextBox x:Name="broadcasterIDForReceiverTextBox" x:FieldModifier="private" 
+                         IsReadOnly="True"
+                         HorizontalAlignment="Left"
+                         VerticalAlignment="Top"
+                         Margin="10" 
+                         TextWrapping="Wrap"
+                         Height="25" 
+                         Width="150"/>
+
+                <Button x:Name="stopReceivingButton" x:FieldModifier="private" 
+                        Content="Stop Receive" 
+                        HorizontalAlignment="Left" 
+                        VerticalAlignment="Top" 
+                        Margin="10" 
+                        Width="120" 
+                        Height="30"/>
+
+            </StackPanel>
+                <Canvas x:Name="remoteScreenDisplay" x:FieldModifier="private" 
+                        HorizontalAlignment="Left" 
+                        VerticalAlignment="Top" 
+                        Margin="10,50,0,0" 
+                        Height="220" 
+                        Width="260"/>
+        </Grid>
     </Grid>
 </Window>

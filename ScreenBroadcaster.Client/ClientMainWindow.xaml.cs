@@ -18,42 +18,23 @@ namespace ScreenBroadcaster.Client
         private ClientController _clientController;
 
         // Properties;
-        public Button       SignInButton 
-        {
-            get { return signInButton; }
-        }
-        public Button       SendAllButton 
-        {
-            get { return sendAllButton; }
-        }
-        public Button       StartStopGenButton
-        {
-            get { return startStopGenButton; }
-        }
-        public StackPanel   ChatPanel 
-        { 
-            get { return chatPanel; } 
-        }
-        public StackPanel   SignInPanel 
-        { 
-            get { return signInPanel; }
-        }
-        public TextBox      MessageTextBox 
-        { 
-            get { return messageTextBox; } 
-        }
-        public RichTextBox  ConsoleRichTextBox 
-        { 
-            get { return consoleRichTextBox; } 
-        }
-        public Label        StatusText 
-        { 
-            get { return statusText; } 
-        }
-        public Label        NumDisplayLabel
-        {
-            get { return numDisplayLabel; }
-        }
+        /*Common UI*/
+        public Panel    CommonUI                            { get { return commonUI;        } }
+        public TextBox  UserNameTextBox                     { get { return userNameTextBox; } }
+        public TextBox  UserIDTextBox                       { get { return userIDTextBox;   } }
+        /*Sign in UI*/
+        public Panel    SignInUI                            { get { return signInUI;                } }
+        public Button   BroadcastButton                     { get { return broadcastButton;         } }
+        public Button   ReceiveButton                       { get { return receiveButton;           } }
+        public TextBox  BroadcasterIdTextBox                { get { return broadcasterIdTextBox;    } }
+        /*Broadcast UI*/
+        public Panel    BroadcastUI                         { get { return broadcastUI;         } }
+        public Button   StopBroadcastingButton              { get { return stopBroadcastButton; } }
+        /*Receive UI*/
+        public Panel    ReceiveUI                           { get { return receiveUI;                       } }
+        public Button   StopReceivingButton                 { get { return stopReceivingButton;             } }
+        public TextBox  BroadcasterIDForReceiverTextBox     { get { return broadcasterIDForReceiverTextBox; } }
+        public Canvas   RemoteScreenDisplay                 { get { return remoteScreenDisplay;             } }
 
         // Methods.
         public ClientMainWindow()
