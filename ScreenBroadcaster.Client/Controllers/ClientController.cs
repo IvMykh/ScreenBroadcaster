@@ -87,18 +87,18 @@ namespace ScreenBroadcaster.Client.Controllers
         {
             if (isUserNameValid())
             {
-                ConnectAsync();
+                bool isConnected = await ConnectAsync();
 
-                //Thread.Sleep(2000);
-
-                if (Connection.State == ConnectionState.Connected)
+                if (isConnected) //Connection.State == ConnectionState.Connected
                 {
-                    var param = new CommandParameter();
-                    param["user"]     = User;
-                    
-                    await CommandsHubProxy.Invoke(
-                        "ExecuteCommand", ClientToServerCommand.RegisterNewBroadcaster, param);
-                    
+                    //var param = new CommandParameter();
+                    //param["user"]     = User;
+                    //
+                    //CommandsHubProxy.Invoke(
+                    //    "ExecuteCommand", ClientToServerCommand.RegisterNewBroadcaster, param);
+
+                    await CommandsHubProxy.Invoke("ExecuteCommand", ClientToServerCommand.RegisterNewBroadcaster, User);
+
                     activateSignInUI(false);
                     activateBroadcastUI(true);
                 }
@@ -109,7 +109,7 @@ namespace ScreenBroadcaster.Client.Controllers
         {
             if (isUserNameValid() && isBroadcasterIDValid())
             {
-                ConnectAsync();
+                bool isConnected = ConnectAsync().Wait(0);
 
                 if (Connection.State == ConnectionState.Connected)
                 {
@@ -137,7 +137,7 @@ namespace ScreenBroadcaster.Client.Controllers
         }
 
         // Other methods.
-        private async void ConnectAsync()
+        private async Task<bool> ConnectAsync()
         {
             Connection = new HubConnection(SERVER_URI);
             Connection.Closed += Connection_Closed;
@@ -155,10 +155,11 @@ namespace ScreenBroadcaster.Client.Controllers
                 string caption = "Server connection error!";
                 MessageBox.Show(text, caption);
 
-                return;
+                return false;
             }
 
             //Show chat UI; hide login UI.
+            return true;
         }
 
         private void setupCommandsHub()

@@ -17,7 +17,7 @@ namespace ScreenBroadcaster.Server
     {
         private IDictionary<User, List<User>>                   _broadcasterReceiversDictionary;
         private IDictionary<
-            ClientToServerCommand, Action<CommandParameter>>    _handlers;
+            ClientToServerCommand, Action<User>> _handlers;
 
         public CommandsHub()
         {
@@ -28,21 +28,21 @@ namespace ScreenBroadcaster.Server
         }
 
         private IDictionary<
-            ClientToServerCommand, Action<CommandParameter>> setupHandlers()
+            ClientToServerCommand, Action<User>> setupHandlers()
         {
-            var handlers = new Dictionary<ClientToServerCommand, Action<CommandParameter>>();
+            var handlers = new Dictionary<ClientToServerCommand, Action<User>>();
 
-            handlers[ClientToServerCommand.RegisterNewBroadcaster] = 
-                new Action<CommandParameter>((param) =>
+            handlers[ClientToServerCommand.RegisterNewBroadcaster] =
+                new Action<User>((param) =>
                     {
-                        _broadcasterReceiversDictionary[(User)param["user"]] = new List<User>();
+                        _broadcasterReceiversDictionary[param] = new List<User>();
                         Clients.Caller.ExecuteCommand(ServerToClientCommand.ReportSuccessfulBcasterRegistration, null);
                     });
 
             return handlers;
         }
 
-        public void ExecuteCommand(ClientToServerCommand command, CommandParameter argument)
+        public void ExecuteCommand(ClientToServerCommand command, User argument)
         {
             _handlers[command](argument);
         }
