@@ -7,46 +7,107 @@ using System.Windows;
 using System.Diagnostics;
 
 using Microsoft.AspNet.SignalR;
+using Newtonsoft.Json.Linq;
 
 using ScreenBroadcaster.Common;
+using ScreenBroadcaster.Common.CommandTypes;
 
 namespace ScreenBroadcaster.Server
 {
     public class CommandsHub
         : Hub
     {
-        private IDictionary<User, List<User>>                   _broadcasterReceiversDictionary;
-        private IDictionary<
-            ClientToServerCommand, Action<User>> _handlers;
-
-        public CommandsHub()
+        private class CommandsHubData
         {
-            _broadcasterReceiversDictionary = new Dictionary<User, List<User>>();
-            _handlers                       = setupHandlers();
+            public List<User>       Users { get; set; }
+            public Dictionary<
+                Guid, List<Guid>>   BcastRecDictionary { get; set; }
 
-            Debug.WriteLine("CommandsHub initialized.");
+            public CommandsHubData()
+            {
+                Users               = new List<User>();
+                BcastRecDictionary  = new Dictionary<Guid, List<Guid>>();
+            }
+        }
+
+        private static CommandsHubData _data;
+
+        static CommandsHub()
+        {
+            _data = new CommandsHubData();
         }
 
         private IDictionary<
-            ClientToServerCommand, Action<User>> setupHandlers()
+            ClientToServerCommand, Action<JObject>> _handlers;
+
+        public CommandsHub()
         {
-            var handlers = new Dictionary<ClientToServerCommand, Action<User>>();
+            _handlers           = setupHandlers();
+        }
+
+        private IDictionary<
+            ClientToServerCommand, Action<JObject>> setupHandlers()
+        {
+            var handlers = new Dictionary<ClientToServerCommand, Action<JObject>>();
 
             handlers[ClientToServerCommand.RegisterNewBroadcaster] =
-                new Action<User>((param) =>
+                new Action<JObject>(param =>
                     {
-                        _broadcasterReceiversDictionary[param] = new List<User>();
-                        Clients.Caller.ExecuteCommand(ServerToClientCommand.ReportSuccessfulBcasterRegistration, null);
+                        var user = new User
+                            {
+                                ID = (Guid)param.SelectToken("ID"),
+                                Name = (string)param.SelectToken("Name")
+                            };
+
+                        _data.Users.Add(user);
+                        _data.BcastRecDictionary[user.ID] = new List<Guid>();
+
+                        var serverParam = new JObject();
+                        serverParam["message"] = "You have been successfully registered as a Broadcaster.";
+                        serverParam["caption"] = "Registration succeeded!";
+
+                        Clients.Caller.ExecuteCommand(ServerToClientCommand.ReportSuccessfulRegistration, serverParam);
+                    });
+
+            handlers[ClientToServerCommand.RegisterNewReceiver] =
+                new Action<JObject>(clientParam =>
+                    {
+                        var user = new User
+                            {
+                                ID = (Guid)clientParam.SelectToken("ID"),
+                                Name = (string)clientParam.SelectToken("Name")
+                            };
+
+                        var bcasterId = (Guid)clientParam.SelectToken("BroadcasterID");
+
+                        var serverParam = new JObject();
+                        if (!_data.BcastRecDictionary.Keys.Any(key => key.CompareTo(bcasterId) == 0))
+                        {
+                            serverParam["message"] = "Registration failed: specified Broadcaster does not exist.";
+                            serverParam["caption"] = "Registration failed!";
+
+                            Clients.Caller.ExecuteCommand(ServerToClientCommand.ReportFailedRegistration, serverParam);
+                            return;
+                        }
+
+                        _data.Users.Add(user);
+                        _data.BcastRecDictionary[bcasterId].Add(user.ID);
+
+                        serverParam["message"] = "You have been successfully registered as a Receiver.";
+                        serverParam["caption"] = "Registration succeeded!";
+
+                        Clients.Caller.ExecuteCommand(ServerToClientCommand.ReportSuccessfulRegistration, serverParam);
                     });
 
             return handlers;
         }
 
-        public void ExecuteCommand(ClientToServerCommand command, User argument)
+        public void ExecuteCommand(ClientToServerCommand command, JObject argument)
         {
             _handlers[command](argument);
         }
 
+        // Unrequired;
         public void Send(string name, string message)
         {
             Clients.All.addMessage(name, message);

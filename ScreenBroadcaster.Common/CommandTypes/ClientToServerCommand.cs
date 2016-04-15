@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ScreenBroadcaster.Common
+namespace ScreenBroadcaster.Common.CommandTypes
 {
     public enum ClientToServerCommand
     {
-        RegisterNewBroadcaster
+        RegisterNewBroadcaster,
+        RegisterNewReceiver
     }
 }

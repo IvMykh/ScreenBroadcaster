@@ -13,7 +13,7 @@
                      VerticalAlignment="Center" 
                      TextWrapping="Wrap"  
                      Width="150"/>
-            
+
             <Label Content="Your ID:" 
                    HorizontalAlignment="Center" 
                    VerticalAlignment="Center" />
@@ -23,20 +23,20 @@
                      HorizontalAlignment="Center" 
                      VerticalAlignment="Center" 
                      TextWrapping="Wrap"  
-                     Width="150"/>
+                     Width="220" />
         </StackPanel>
-        
+
 
         <Grid x:Name="signInUI" x:FieldModifier="private" 
               Margin="0,40,0,0" 
               Visibility="Visible">
-            
+
             <Button x:Name="broadcastButton" x:FieldModifier="private" 
                     Content="Broadcast" 
                     VerticalAlignment="Top" 
                     Width="75" Margin="106,57,328,0" />
-            
-            <StackPanel Width="160" Margin="300,0,0,0">
+
+            <StackPanel Margin="330,0,10,0">
                 <Label Content="Broadcaster ID:" 
                        HorizontalAlignment="Center" 
                        VerticalAlignment="Center" />
@@ -45,7 +45,7 @@
                         VerticalAlignment="Center" 
                         TextWrapping="Wrap" 
                         Height="30" 
-                        Width="150"/>
+                        Width="179"/>
                 <Button x:Name="receiveButton" x:FieldModifier="private" 
                     Content="Receive" 
                     VerticalAlignment="Top" 
@@ -56,7 +56,7 @@
         <Grid x:Name="broadcastUI" x:FieldModifier="private" 
               Margin="0,40,0,0" 
               Visibility="Collapsed">
-            
+
             <StackPanel Orientation="Horizontal">
 
                 <Button x:Name="stopBroadcastButton" x:FieldModifier="private" 
@@ -71,7 +71,7 @@
         <Grid x:Name="receiveUI" x:FieldModifier="private" 
               Margin="0,40,0,0" 
               Visibility="Collapsed">
-            
+
             <StackPanel Orientation="Horizontal">
                 <Label Content="Broadcaster ID:"   
                        Margin="10" 
@@ -95,7 +95,7 @@
                         Height="30"/>
 
             </StackPanel>
-                <Canvas x:Name="remoteScreenDisplay" x:FieldModifier="private" 
+            <Canvas x:Name="remoteScreenDisplay" x:FieldModifier="private" 
                         HorizontalAlignment="Left" 
                         VerticalAlignment="Top" 
                         Margin="10,50,0,0" 
