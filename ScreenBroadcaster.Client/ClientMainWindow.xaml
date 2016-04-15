@@ -40,7 +40,7 @@
         </Grid>
 
         <Grid x:Name="signInUI" x:FieldModifier="private" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-              Margin="0,50,0,0" Visibility="Collapsed">
+              Margin="0,50,0,0" Visibility="Visible">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
@@ -78,7 +78,7 @@
             <Grid x:Name="broadcastUI" x:FieldModifier="private" Grid.Column="0"
                   VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                   Margin="0,0,0,0" 
-                  Visibility="Visible">
+                  Visibility="Collapsed">
 
                 <RichTextBox x:Name="logRichTextBox" x:FieldModifier="private"
                              HorizontalAlignment="Left" VerticalAlignment="Stretch"
@@ -131,7 +131,7 @@
                          Background="AliceBlue"/>
             </Grid>
 
-            <Grid Grid.Column="1" x:Name="chatUI">
+            <Grid Grid.Column="1" x:Name="chatUI" Visibility="Collapsed">
                 <RichTextBox x:Name="chatRichTextBox" x:FieldModifier="private"
                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                              Margin="10,10,10,35">
