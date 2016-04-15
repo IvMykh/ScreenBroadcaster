@@ -140,6 +140,7 @@ namespace ScreenBroadcaster.Client.Controllers
         {
             User.Name = _clientMainWindow.UserNameTextBox.Text;
         }
+
         private void BroadcasterIdTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             Guid broadcasterID = default(Guid);            
@@ -186,6 +187,7 @@ namespace ScreenBroadcaster.Client.Controllers
             CommandsHubProxy.On<ServerToClientCommand, JObject>(
                 "ExecuteCommand", (command, serverParam) => CommandsExecutor.ExecuteCommand(command, serverParam));
         }
+
         private void setupPicturesHub()
         {
             PicturesHubProxy = HubConnection.CreateHubProxy("PicturesHub");
@@ -208,6 +210,7 @@ namespace ScreenBroadcaster.Client.Controllers
                 return false;
             }
         }
+
         private bool isBroadcasterIDValid()
         {
             if (BroadcasterID.HasValue)
@@ -237,6 +240,7 @@ namespace ScreenBroadcaster.Client.Controllers
                 _clientMainWindow.UserNameTextBox.IsReadOnly = true;
             }
         }
+
         private void activateBroadcastUI(bool shouldActivate)
         {
             if (shouldActivate)
@@ -250,6 +254,7 @@ namespace ScreenBroadcaster.Client.Controllers
                 _clientMainWindow.UserIDTextBox.Text = string.Empty;
             }
         }
+
         private void activateReceiveUI(bool shouldActivate)
         {
             if (shouldActivate)

@@ -21,28 +21,43 @@ namespace ScreenBroadcaster.Server
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class ServerMainWindow 
+    public partial class ServerMainWindow
         : Window
     {
         // Instance fields;
         private ServerController _serverController;
 
         // Properties.
-        public ServerController ServerController 
-        { 
-            get { return _serverController; } 
-        }
-        public Button           StartButton 
-        { 
-            get { return startButton; } 
-        }
-        public Button           StopButton 
-        { 
-            get { return stopButton; } 
-        }
-        public RichTextBox      ConsoleRichTextBox 
+        public ServerController ServerController
         {
-            get { return consoleRichTextBox; } 
+            get
+            {
+                return _serverController;
+            }
+        }
+
+        public Button StartButton
+        {
+            get
+            {
+                return startButton;
+            }
+        }
+
+        public Button StopButton
+        {
+            get
+            {
+                return stopButton;
+            }
+        }
+
+        public RichTextBox ConsoleRichTextBox
+        {
+            get
+            {
+                return consoleRichTextBox;
+            }
         }
 
         // Methods.
@@ -54,6 +69,6 @@ namespace ScreenBroadcaster.Server
         private void Window_Initialized(object sender, EventArgs e)
         {
             _serverController = new ServerController(this);
-        }        
+        }
     }
 }
