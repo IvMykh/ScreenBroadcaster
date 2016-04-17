@@ -84,7 +84,7 @@
                              HorizontalAlignment="Left" VerticalAlignment="Stretch"
                              Margin="10,10,10,35"
                              Width="180"
-                             IsReadOnly="True">
+                             IsReadOnly="True" VerticalScrollBarVisibility="Auto">
                 </RichTextBox>
 
                 <Button x:Name="stopBroadcastButton" x:FieldModifier="private" 
@@ -136,7 +136,7 @@
                 <RichTextBox x:Name="chatRichTextBox" x:FieldModifier="private"
                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                              Margin="10,10,10,35"
-                             IsReadOnly="True">
+                             IsReadOnly="True" VerticalScrollBarVisibility="Auto">
                 </RichTextBox>
                 <TextBox x:Name="messageTextBox" x:FieldModifier="private"
                          Style="{StaticResource ResourceKey=TextBoxStyle}"
