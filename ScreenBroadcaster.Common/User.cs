@@ -8,12 +8,8 @@ namespace ScreenBroadcaster.Common
 {
     public class User
     {
-        public string   Name    { get; set; }
-        public Guid     ID      { get; set; }
-
-        public override int GetHashCode()
-        {
-            return ID.GetHashCode();
-        }
+        public string   Name            { get; set; }
+        public Guid     ID              { get; set; }
+        public string   ClientIdOnHub   { get; set; }
     }
 }

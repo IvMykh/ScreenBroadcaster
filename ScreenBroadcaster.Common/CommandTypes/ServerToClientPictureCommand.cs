@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace ScreenBroadcaster.Common.CommandTypes
 {
-    public enum ClientToServerCommand
+    public enum ServerToClientPictureCommand
     {
-        RegisterNewBroadcaster,
-        RegisterNewReceiver
+
     }
 }

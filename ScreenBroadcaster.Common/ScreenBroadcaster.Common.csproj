@@ -40,9 +40,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommandTypes\ClientToServerCommand.cs" />
+    <Compile Include="CommandTypes\ClientToServerGeneralCommand.cs" />
     <Compile Include="CommandParameter.cs" />
-    <Compile Include="CommandTypes\ServerToClientCommand.cs" />
+    <Compile Include="CommandTypes\ClientToServerPictureCommand.cs" />
+    <Compile Include="CommandTypes\ServerToClientGeneralCommand.cs" />
+    <Compile Include="CommandTypes\ServerToClientPictureCommand.cs" />
     <Compile Include="User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -68,7 +68,7 @@
                     Margin="0,40,10,0" MaxWidth="300"/>
         </Grid>
         
-        <Grid x:Name="groupGrid" Margin="0,50,0,0"
+        <Grid x:Name="groupGrid" x:FieldModifier="private" Margin="0,50,0,0"
               HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Visibility="Visible">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -83,7 +83,8 @@
                 <RichTextBox x:Name="logRichTextBox" x:FieldModifier="private"
                              HorizontalAlignment="Left" VerticalAlignment="Stretch"
                              Margin="10,10,10,35"
-                             Width="180">
+                             Width="180"
+                             IsReadOnly="True">
                 </RichTextBox>
 
                 <Button x:Name="stopBroadcastButton" x:FieldModifier="private" 
@@ -131,10 +132,11 @@
                          Background="AliceBlue"/>
             </Grid>
 
-            <Grid Grid.Column="1" x:Name="chatUI" Visibility="Collapsed">
+            <Grid Grid.Column="1" x:Name="chatUI" x:FieldModifier="private" Visibility="Collapsed">
                 <RichTextBox x:Name="chatRichTextBox" x:FieldModifier="private"
                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                             Margin="10,10,10,35">
+                             Margin="10,10,10,35"
+                             IsReadOnly="True">
                 </RichTextBox>
                 <TextBox x:Name="messageTextBox" x:FieldModifier="private"
                          Style="{StaticResource ResourceKey=TextBoxStyle}"
