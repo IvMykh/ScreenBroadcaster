@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls.Primitives;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
+using ScreenBroadcaster.Client.ScreenCapturing;
 using ScreenBroadcaster.Common;
 using ScreenBroadcaster.Common.CommandTypes;
 
@@ -17,10 +22,17 @@ namespace ScreenBroadcaster.Client.Controllers
             : CommandsExecutor<ServerToClientGeneralCommand>
         {
 
+            public ScreenCapturer   ScreenCapturer  { get; private set; }
+            public int              CurrFragment    { get; private set; }
+            public List<string>     PicFrags { get; private set; }
+
             public GeneralCommandsExecutor(ClientController clientController)
                 : base(clientController)
             {
                 setupHandlers();
+
+                ScreenCapturer  = new ScreenCapturer();
+                PicFrags        = new List<string>();
             }
 
             protected override void setupHandlers()
@@ -31,17 +43,34 @@ namespace ScreenBroadcaster.Client.Controllers
                 Handlers[ServerToClientGeneralCommand.NotifyStopReceiving]              = notifyStopReceiving;
                 Handlers[ServerToClientGeneralCommand.NotifyStopBroadcasting]           = notifyStopBroadcasting;
                 Handlers[ServerToClientGeneralCommand.ForceStopReceiving]               = forceStopReceiving;
+                Handlers[ServerToClientGeneralCommand.ReceivePictureFragment]           = receivePictureFragment;
+
+                // for pictures.
+                Handlers[ServerToClientGeneralCommand.MakePictureFragment]              = makePictureFragment;
             }
+
 
             
             private void reportSuccessfulRegistration(JObject serverParam)
             {
                 var text = (string)serverParam.SelectToken("message");
                 var caption = (string)serverParam.SelectToken("caption");
+                var userType = (string)serverParam.SelectToken("userType");
 
                 MessageBox.Show(text, caption, MessageBoxButton.OK, MessageBoxImage.None);
 
                 ClientController.IsRegistered = true;
+
+                if (String.CompareOrdinal(userType, "Receiver") == 0)
+                {
+                    // Request for first picture fragment.
+                    var clientParam = new JObject();
+                    clientParam["broadcasterID"] = ClientController.BroadcasterID;
+                    clientParam["receiverID"] = ClientController.User.ID;
+
+                    ClientController.CommandsHubProxy
+                        .Invoke("ExecuteCommand", ClientToServerGeneralCommand.GiveNextPictureFragment, clientParam);
+                }
             }
             private void reportFailedRegistration(JObject serverParam)
             {
@@ -101,7 +130,77 @@ namespace ScreenBroadcaster.Client.Controllers
             private void forceStopReceiving(JObject serverParam)
             {
                 ClientController.StopReceivingButton_Click(null, null);
-            }   
+            }
+
+            private async void makePictureFragment(JObject serverParam)
+            {
+                if (CurrFragment == 0)
+                {
+                    ScreenCapturer.CaptureScreen();
+                }
+
+                var clientParam = new JObject();
+                clientParam["broadcaserID"] = serverParam.SelectToken("broadcaserID");
+                clientParam["receiverID"]   = serverParam.SelectToken("receiverID");
+                clientParam["nextPicFrag"]  = ScreenCapturer.ScreenshotAsBase64Strings[CurrFragment];
+
+                bool isLast = (CurrFragment == ScreenCapturer.ScreenshotAsBase64Strings.Length - 1) ? true : false;
+
+                if (isLast)
+                    CurrFragment = 0;
+                else
+                    ++CurrFragment;
+
+                clientParam["isLast"]       = isLast;
+
+                await ClientController.CommandsHubProxy
+                    .Invoke("ExecuteCommand", ClientToServerGeneralCommand.TakeNextPictureFragment, clientParam);
+            }
+            private async void receivePictureFragment(JObject serverParam)
+            {
+                var nextPicFrag = (string)serverParam.SelectToken("nextPicFrag");
+                var isLast      = (bool)serverParam.SelectToken("isLast");
+
+                PicFrags.Add(nextPicFrag);
+
+                if (isLast)
+                {
+                    var strBuilder = new StringBuilder();
+
+                    foreach (var frag in PicFrags)
+                    {
+                        strBuilder.Append(frag);
+                    }
+
+                    byte[] pictureData = Convert.FromBase64String(strBuilder.ToString());
+
+                    using (var memoryStream = new MemoryStream(pictureData))
+                    {
+                         memoryStream.Position = 0;
+
+                        ClientController.MainWindow.Dispatcher.Invoke(() =>
+                        {
+                            BitmapImage bitmapImage = new BitmapImage();
+                            bitmapImage.BeginInit();
+                            bitmapImage.StreamSource = memoryStream;
+                            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                            bitmapImage.EndInit();
+                            
+                            var brush = new ImageBrush(bitmapImage);
+                            ClientController.MainWindow.RemoteScreenDisplay.Background = brush;
+                        });
+                    }
+
+                    PicFrags.Clear();
+                }
+
+                var clientParam = new JObject();
+                clientParam["broadcasterID"] = ClientController.BroadcasterID;
+                clientParam["receiverID"] = ClientController.User.ID;
+
+                await ClientController.CommandsHubProxy
+                    .Invoke("ExecuteCommand", ClientToServerGeneralCommand.GiveNextPictureFragment, clientParam);
+            }
         }
     }
 }

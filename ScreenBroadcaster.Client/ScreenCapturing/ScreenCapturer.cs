@@ -12,6 +12,9 @@ namespace ScreenBroadcaster.Client.ScreenCapturing
 {
     public class ScreenCapturer
     {
+        public const int PIC_BLOCK_SIZE = 32 * 1024;
+        public const int CHARS_IN_BLOCK = PIC_BLOCK_SIZE / 2;
+
         public static int ScreenWidth   { get; private set; }
         public static int ScreenHeight  { get; private set; }
 
@@ -22,6 +25,7 @@ namespace ScreenBroadcaster.Client.ScreenCapturing
         }
 
         public Bitmap Screenshot { get; private set; }
+        public string[] ScreenshotAsBase64Strings { get; private set; }
 
         ~ScreenCapturer()
         {
@@ -47,25 +51,34 @@ namespace ScreenBroadcaster.Client.ScreenCapturing
                 var destUpLeftPoint = new System.Drawing.Point(0, 0);
                 graphics.CopyFromScreen(sourceUpLeftPoint, destUpLeftPoint, Screenshot.Size, CopyPixelOperation.SourceCopy);
             }
+
+            ScreenshotAsBase64Strings = getScreenshotAsBase64Strings();
         }
 
-        public string Base64String
+        private string[] getScreenshotAsBase64Strings()
         {
-            get
+            string base64Representation = null;
+            byte[] imageBytes = null;
+
+            using (var stream = new MemoryStream())
             {
-                string base64Representation = null;
-                byte[] imageBytes = null;
+                Screenshot.Save(stream, ImageFormat.Jpeg);
+                imageBytes = stream.ToArray();
 
-                using (var stream = new MemoryStream())
-                {
-                    Screenshot.Save(stream, ImageFormat.Jpeg);
-                    imageBytes = stream.ToArray();
-
-                    base64Representation = Convert.ToBase64String(imageBytes);
-                }
-
-                return base64Representation;
+                base64Representation = Convert.ToBase64String(imageBytes);
             }
+
+            string[] base64Strings = new string[base64Representation.Length / CHARS_IN_BLOCK + 1];
+
+            int i = 0;
+            for (; i < base64Strings.Length - 1; i++)
+            {
+                base64Strings[i] = base64Representation
+                    .Substring(i * CHARS_IN_BLOCK, CHARS_IN_BLOCK);
+            }
+            base64Strings[base64Strings.Length - 1] = base64Representation.Substring(i * CHARS_IN_BLOCK);
+
+            return base64Strings;
         }
     }
 }

@@ -8,9 +8,14 @@ namespace ScreenBroadcaster.Common.CommandTypes
 {
     public enum ClientToServerGeneralCommand
     {
+        // general
         RegisterNewBroadcaster,
         RegisterNewReceiver,
         StopReceiving,
-        StopBroadcasting
+        StopBroadcasting,
+
+        // for pictures
+        GiveNextPictureFragment,
+        TakeNextPictureFragment
     }
 }

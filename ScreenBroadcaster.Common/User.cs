@@ -12,4 +12,10 @@ namespace ScreenBroadcaster.Common
         public Guid     ID              { get; set; }
         public string   ClientIdOnHub   { get; set; }
     }
+
+    public enum UserType
+    {
+        Broadcaster,
+        Receiver
+    }
 }

@@ -23,10 +23,14 @@ namespace ScreenBroadcaster.Server
             public Dictionary<
                 Guid, List<Guid>>   BcastRecDictionary { get; set; }
 
+            //public Dictionary<
+            //    Guid, List<string>> BcastPicFragsDictionary { get; set; }
+
+
             public CommandsHubData()
             {
-                Users               = new List<User>();
-                BcastRecDictionary  = new Dictionary<Guid, List<Guid>>();
+                Users                   = new List<User>();
+                BcastRecDictionary      = new Dictionary<Guid, List<Guid>>();
             }
         }
 
@@ -53,10 +57,15 @@ namespace ScreenBroadcaster.Server
             handlers[ClientToServerGeneralCommand.RegisterNewBroadcaster]   = registerNewBroadcaster;
             handlers[ClientToServerGeneralCommand.RegisterNewReceiver]      = registerNewReceiver;
             handlers[ClientToServerGeneralCommand.StopReceiving]            = stopReceiving;
+            handlers[ClientToServerGeneralCommand.GiveNextPictureFragment]  = giveNextPictureFragment;
             handlers[ClientToServerGeneralCommand.StopBroadcasting]         = stopBroadcasting;
+
+            // for pictures.
+            handlers[ClientToServerGeneralCommand.TakeNextPictureFragment]  = takeNextPictureFragment;
 
             return handlers;
         }
+
 
         private async void registerNewBroadcaster(JObject clientParam)
         {
@@ -74,6 +83,7 @@ namespace ScreenBroadcaster.Server
             var serverParam = new JObject();
             serverParam["message"] = "You have been successfully registered as a Broadcaster.";
             serverParam["caption"] = "Registration succeeded!";
+            serverParam["userType"] = "Broadcaster";
 
             await Clients.Caller.ExecuteCommand(ServerToClientGeneralCommand.ReportSuccessfulRegistration, serverParam);
         }      
@@ -110,6 +120,7 @@ namespace ScreenBroadcaster.Server
 
             serverParamForCaller["message"] = "You have been successfully registered as a Receiver.";
             serverParamForCaller["caption"] = "Registration succeeded!";
+            serverParamForCaller["userType"] = "Receiver";
 
             Clients.Caller.ExecuteCommand(
                 ServerToClientGeneralCommand.ReportSuccessfulRegistration, serverParamForCaller);
@@ -178,6 +189,27 @@ namespace ScreenBroadcaster.Server
             await Clients.Caller.ExecuteCommand(
                 ServerToClientGeneralCommand.NotifyStopBroadcasting, serverParam);
             
+        }
+
+        private async void giveNextPictureFragment(JObject clientParam)
+        {
+            var bcasterID = (Guid)clientParam.SelectToken("broadcasterID");
+            var bcaster = _data.Users.Find(user => user.ID.Equals(bcasterID));
+
+            await Clients.Client(bcaster.ClientIdOnHub).ExecuteCommand(
+                ServerToClientGeneralCommand.MakePictureFragment, clientParam);
+        }
+        private async void takeNextPictureFragment(JObject clientParam)
+        {
+            var serverParam = new JObject();
+            serverParam["nextPicFrag"] = clientParam.SelectToken("nextPicFrag");
+            serverParam["isLast"] = clientParam.SelectToken("isLast");
+
+            var receiverID = (Guid)clientParam.SelectToken("receiverID");
+            User receiver = _data.Users.Find(user => user.ID.Equals(receiverID));
+
+            await Clients.Client(receiver.ClientIdOnHub).ExecuteCommand(
+                ServerToClientGeneralCommand.ReceivePictureFragment, serverParam);
         }
 
         public void ExecuteCommand(ClientToServerGeneralCommand command, JObject argument)
