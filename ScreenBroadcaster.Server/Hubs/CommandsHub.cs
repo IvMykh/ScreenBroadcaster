@@ -12,35 +12,20 @@ using Newtonsoft.Json.Linq;
 using ScreenBroadcaster.Common;
 using ScreenBroadcaster.Common.CommandTypes;
 
-namespace ScreenBroadcaster.Server
+namespace ScreenBroadcaster.Server.Hubs
 {
     public class CommandsHub
         : Hub
     {
-        private class CommandsHubData
-        {
-            public List<User>       Users { get; set; }
-            public Dictionary<
-                Guid, List<Guid>>   BcastRecDictionary { get; set; }
-
-            //public Dictionary<
-            //    Guid, List<string>> BcastPicFragsDictionary { get; set; }
-
-
-            public CommandsHubData()
-            {
-                Users                   = new List<User>();
-                BcastRecDictionary      = new Dictionary<Guid, List<Guid>>();
-            }
-        }
-
-        private static CommandsHubData _data;
+        // Static members.
+        private static HubData _data;
 
         static CommandsHub()
         {
-            _data = new CommandsHubData();
+            _data = HubData.Instance;
         }
 
+        // Instance members.
         private IDictionary<
             ClientToServerGeneralCommand, Action<JObject>> _handlers;
 
@@ -57,11 +42,11 @@ namespace ScreenBroadcaster.Server
             handlers[ClientToServerGeneralCommand.RegisterNewBroadcaster]   = registerNewBroadcaster;
             handlers[ClientToServerGeneralCommand.RegisterNewReceiver]      = registerNewReceiver;
             handlers[ClientToServerGeneralCommand.StopReceiving]            = stopReceiving;
-            handlers[ClientToServerGeneralCommand.GiveNextPictureFragment]  = giveNextPictureFragment;
             handlers[ClientToServerGeneralCommand.StopBroadcasting]         = stopBroadcasting;
 
             // for pictures.
-            handlers[ClientToServerGeneralCommand.TakeNextPictureFragment]  = takeNextPictureFragment;
+            //handlers[ClientToServerGeneralCommand.TakeNextPictureFragment]  = takeNextPictureFragment;
+            //handlers[ClientToServerGeneralCommand.GiveNextPictureFragment]  = giveNextPictureFragment;
 
             return handlers;
         }
@@ -97,8 +82,8 @@ namespace ScreenBroadcaster.Server
             };
 
             var bcasterId = (Guid)clientParam.SelectToken("BroadcasterID");
-            List<Guid> recIdsList = null;
-            bool bcasterExists =_data.BcastRecDictionary.TryGetValue(bcasterId, out recIdsList);
+            List<Guid> receivers = null;
+            bool bcasterExists =_data.BcastRecDictionary.TryGetValue(bcasterId, out receivers);
 
             var serverParamForCaller = new JObject();
 
@@ -130,6 +115,14 @@ namespace ScreenBroadcaster.Server
             serverParamForBcaster["receiverID"] = newReceiver.ID;
             serverParamForBcaster["state"] = "joined";
 
+            var bcastState = BroadcastSpecialState.None;
+            if (receivers.Count == 1)
+            {
+                bcastState = BroadcastSpecialState.FirstReceiverJoined;
+            }
+
+            serverParamForBcaster["specialState"] = bcastState.ToString();
+
             Clients.Client(bcaster.ClientIdOnHub).ExecuteCommand(
                 ServerToClientGeneralCommand.NotifyReceiverStateChange, serverParamForBcaster);
         }
@@ -147,12 +140,20 @@ namespace ScreenBroadcaster.Server
             {
                 receivers.Remove(callerId);
 
-                var bcaster = _data.Users.Find(user => user.ID.Equals(bcasterId));
+                User bcaster = _data.Users.Find(user => user.ID.Equals(bcasterId));
 
                 var serverParamForBcaster = new JObject();
                 serverParamForBcaster["receiverName"] = caller.Name;
                 serverParamForBcaster["receiverID"] = caller.ID;
                 serverParamForBcaster["state"] = "left";
+
+                var bcastState = BroadcastSpecialState.None;
+                if (receivers.Count == 0)
+                {
+                    bcastState = BroadcastSpecialState.LastReceiverLeft;
+                }
+
+                serverParamForBcaster["specialState"] = bcastState.ToString();
 
                 await Clients.Client(bcaster.ClientIdOnHub).ExecuteCommand(
                         ServerToClientGeneralCommand.NotifyReceiverStateChange, serverParamForBcaster);
@@ -191,26 +192,26 @@ namespace ScreenBroadcaster.Server
             
         }
 
-        private async void giveNextPictureFragment(JObject clientParam)
-        {
-            var bcasterID = (Guid)clientParam.SelectToken("broadcasterID");
-            var bcaster = _data.Users.Find(user => user.ID.Equals(bcasterID));
-
-            await Clients.Client(bcaster.ClientIdOnHub).ExecuteCommand(
-                ServerToClientGeneralCommand.MakePictureFragment, clientParam);
-        }
-        private async void takeNextPictureFragment(JObject clientParam)
-        {
-            var serverParam = new JObject();
-            serverParam["nextPicFrag"] = clientParam.SelectToken("nextPicFrag");
-            serverParam["isLast"] = clientParam.SelectToken("isLast");
-
-            var receiverID = (Guid)clientParam.SelectToken("receiverID");
-            User receiver = _data.Users.Find(user => user.ID.Equals(receiverID));
-
-            await Clients.Client(receiver.ClientIdOnHub).ExecuteCommand(
-                ServerToClientGeneralCommand.ReceivePictureFragment, serverParam);
-        }
+        //private async void giveNextPictureFragment(JObject clientParam)
+        //{
+        //    var bcasterID = (Guid)clientParam.SelectToken("broadcasterID");
+        //    var bcaster = _data.Users.Find(user => user.ID.Equals(bcasterID));
+        //
+        //    await Clients.Client(bcaster.ClientIdOnHub).ExecuteCommand(
+        //        ServerToClientGeneralCommand.MakePictureFragment, clientParam);
+        //}
+        //private async void takeNextPictureFragment(JObject clientParam)
+        //{
+        //    var serverParam = new JObject();
+        //    serverParam["nextPicFrag"] = clientParam.SelectToken("nextPicFrag");
+        //    serverParam["isLast"] = clientParam.SelectToken("isLast");
+        //
+        //    var receiverID = (Guid)clientParam.SelectToken("receiverID");
+        //    User receiver = _data.Users.Find(user => user.ID.Equals(receiverID));
+        //
+        //    await Clients.Client(receiver.ClientIdOnHub).ExecuteCommand(
+        //        ServerToClientGeneralCommand.ReceivePictureFragment, serverParam);
+        //}
 
         public void ExecuteCommand(ClientToServerGeneralCommand command, JObject argument)
         {

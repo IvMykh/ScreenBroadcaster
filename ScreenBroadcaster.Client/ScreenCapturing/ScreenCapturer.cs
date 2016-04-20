@@ -24,7 +24,7 @@ namespace ScreenBroadcaster.Client.ScreenCapturing
             ScreenHeight    = (int)SystemParameters.PrimaryScreenHeight;
         }
 
-        public Bitmap Screenshot { get; private set; }
+        public Image Screenshot { get; private set; }
         public string[] ScreenshotAsBase64Strings { get; private set; }
 
         ~ScreenCapturer()
@@ -55,6 +55,21 @@ namespace ScreenBroadcaster.Client.ScreenCapturing
             ScreenshotAsBase64Strings = getScreenshotAsBase64Strings();
         }
 
+        private ImageCodecInfo GetEncoder(ImageFormat format)
+        {
+
+            ImageCodecInfo[] codecs = ImageCodecInfo.GetImageDecoders();
+
+            foreach (ImageCodecInfo codec in codecs)
+            {
+                if (codec.FormatID == format.Guid)
+                {
+                    return codec;
+                }
+            }
+            return null;
+        }
+
         private string[] getScreenshotAsBase64Strings()
         {
             string base64Representation = null;
@@ -62,7 +77,14 @@ namespace ScreenBroadcaster.Client.ScreenCapturing
 
             using (var stream = new MemoryStream())
             {
-                Screenshot.Save(stream, ImageFormat.Jpeg);
+                ImageCodecInfo jpgEncoder = GetEncoder(ImageFormat.Jpeg);
+                System.Drawing.Imaging.Encoder myEncoder = System.Drawing.Imaging.Encoder.Quality;
+                EncoderParameters myEncoderParameters = new EncoderParameters(1);
+
+                EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder, 15L);
+                myEncoderParameters.Param[0] = myEncoderParameter;
+
+                Screenshot.Save(stream, jpgEncoder, myEncoderParameters);
                 imageBytes = stream.ToArray();
 
                 base64Representation = Convert.ToBase64String(imageBytes);

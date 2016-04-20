@@ -8,6 +8,6 @@ namespace ScreenBroadcaster.Common.CommandTypes
 {
     public enum ClientToServerPictureCommand
     {
-        //
+        SendNewPicture
     }
 }

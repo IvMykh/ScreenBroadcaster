@@ -87,8 +87,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Controllers\ServerController.cs" />
-    <Compile Include="CommandsHub.cs" />
-    <Compile Include="PicturesHub.cs" />
+    <Compile Include="Hubs\CommandsHub.cs" />
+    <Compile Include="Hubs\PicturesHub.cs" />
+    <Compile Include="Hubs\HubData.cs" />
     <Compile Include="Startup.cs" />
     <Page Include="ServerMainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

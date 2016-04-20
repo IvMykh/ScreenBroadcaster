@@ -19,6 +19,8 @@ namespace ScreenBroadcaster.Client.Controllers
     public partial class ClientController
     {
         public partial class GeneralCommandsExecutor { }
+        public partial class PictureSender
+            : IDisposable { }
 
         // Constants.
         private const string                    SERVER_URI = "http://localhost:8080/signalr";
@@ -254,8 +256,10 @@ namespace ScreenBroadcaster.Client.Controllers
         {
             PicturesHubProxy = HubConnection.CreateHubProxy("PicturesHub");
 
+            var context = SynchronizationContext.Current;
+
             PicturesHubProxy.On<ServerToClientPictureCommand, JObject>(
-                "ExecuteCommand", (command, serverParam) => PicCommandsExecutor.ExecuteCommand(command, serverParam));
+                "ExecuteCommand", (command, serverParam) => context.Post(delegate { PicCommandsExecutor.ExecuteCommand(command, serverParam); }, null));
         }
 
         private bool isUserNameValid()
