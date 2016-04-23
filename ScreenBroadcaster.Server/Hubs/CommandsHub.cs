@@ -44,10 +44,11 @@ namespace ScreenBroadcaster.Server.Hubs
             handlers[ClientToServerGeneralCommand.StopReceiving]            = stopReceiving;
             handlers[ClientToServerGeneralCommand.StopBroadcasting]         = stopBroadcasting;
 
-            // for pictures.
-            //handlers[ClientToServerGeneralCommand.TakeNextPictureFragment]  = takeNextPictureFragment;
-            //handlers[ClientToServerGeneralCommand.GiveNextPictureFragment]  = giveNextPictureFragment;
-
+            // тут додати обробника для відповідної команди від клієнта.
+            
+            // ВАЖЛИВО! Щоб відправити, треба за GUID'ом знайти у списку користувача 
+            // і взяти його властивість ClientIdOnHub (див. як я робив в інших методах)
+            
             return handlers;
         }
 
@@ -191,27 +192,6 @@ namespace ScreenBroadcaster.Server.Hubs
                 ServerToClientGeneralCommand.NotifyStopBroadcasting, serverParam);
             
         }
-
-        //private async void giveNextPictureFragment(JObject clientParam)
-        //{
-        //    var bcasterID = (Guid)clientParam.SelectToken("broadcasterID");
-        //    var bcaster = _data.Users.Find(user => user.ID.Equals(bcasterID));
-        //
-        //    await Clients.Client(bcaster.ClientIdOnHub).ExecuteCommand(
-        //        ServerToClientGeneralCommand.MakePictureFragment, clientParam);
-        //}
-        //private async void takeNextPictureFragment(JObject clientParam)
-        //{
-        //    var serverParam = new JObject();
-        //    serverParam["nextPicFrag"] = clientParam.SelectToken("nextPicFrag");
-        //    serverParam["isLast"] = clientParam.SelectToken("isLast");
-        //
-        //    var receiverID = (Guid)clientParam.SelectToken("receiverID");
-        //    User receiver = _data.Users.Find(user => user.ID.Equals(receiverID));
-        //
-        //    await Clients.Client(receiver.ClientIdOnHub).ExecuteCommand(
-        //        ServerToClientGeneralCommand.ReceivePictureFragment, serverParam);
-        //}
 
         public void ExecuteCommand(ClientToServerGeneralCommand command, JObject argument)
         {

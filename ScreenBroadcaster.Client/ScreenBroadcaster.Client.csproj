@@ -84,7 +84,6 @@
     <Compile Include="Controllers\GeneralCommandsExecutor.cs" />
     <Compile Include="Controllers\PictureSender.cs" />
     <Compile Include="ScreenCapturing\ScreenCapturer.cs" />
-    <Compile Include="UtilityClasses.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

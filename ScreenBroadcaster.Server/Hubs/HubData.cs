@@ -8,6 +8,7 @@ using ScreenBroadcaster.Common;
 
 namespace ScreenBroadcaster.Server.Hubs
 {
+    // визначає дані про транслятора і його слухачів для хабів.
     internal class HubData
     {
         // Singleton.
@@ -20,7 +21,11 @@ namespace ScreenBroadcaster.Server.Hubs
 
 
         // Instance members.
+
+        // всі юзери, які підключені до сервера.
         public List<User>       Users { get; set; }
+
+        // словник, у якому GUID'у транслятора відповідає список GUID'ів його глядачів.
         public Dictionary<
             Guid, List<Guid>>   BcastRecDictionary { get; set; }
 

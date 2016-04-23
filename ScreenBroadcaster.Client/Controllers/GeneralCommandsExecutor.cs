@@ -41,9 +41,7 @@ namespace ScreenBroadcaster.Client.Controllers
                 Handlers[ServerToClientGeneralCommand.NotifyStopBroadcasting]           = notifyStopBroadcasting;
                 Handlers[ServerToClientGeneralCommand.ForceStopReceiving]               = forceStopReceiving;
 
-                // for pictures.
-                //Handlers[ServerToClientGeneralCommand.MakePictureFragment]              = makePictureFragment;
-                //Handlers[ServerToClientGeneralCommand.ReceivePictureFragment]           = receivePictureFragment;
+                // тут додати обробника відповідної команди від сервера до клієнта.
             }
 
 
@@ -64,9 +62,6 @@ namespace ScreenBroadcaster.Client.Controllers
                     var clientParam = new JObject();
                     clientParam["broadcasterID"] = ClientController.BroadcasterID;
                     clientParam["receiverID"] = ClientController.User.ID;
-
-                    //ClientController.CommandsHubProxy
-                    //    .Invoke("ExecuteCommand", ClientToServerGeneralCommand.GiveNextPictureFragment, clientParam);
                 }
             }
             private void reportFailedRegistration(JObject serverParam)
@@ -151,76 +146,6 @@ namespace ScreenBroadcaster.Client.Controllers
             {
                 ClientController.StopReceivingButton_Click(null, null);
             }
-
-            //private async void makePictureFragment(JObject serverParam)
-            //{
-            //    if (CurrFragment == 0)
-            //    {
-            //        ScreenCapturer.CaptureScreen();
-            //    }
-
-            //    var clientParam = new JObject();
-            //    clientParam["broadcaserID"] = serverParam.SelectToken("broadcaserID");
-            //    clientParam["receiverID"]   = serverParam.SelectToken("receiverID");
-            //    clientParam["nextPicFrag"]  = ScreenCapturer.ScreenshotAsBase64Strings[CurrFragment];
-
-            //    bool isLast = (CurrFragment == ScreenCapturer.ScreenshotAsBase64Strings.Length - 1) ? true : false;
-
-            //    if (isLast)
-            //        CurrFragment = 0;
-            //    else
-            //        ++CurrFragment;
-
-            //    clientParam["isLast"]       = isLast;
-
-            //    await ClientController.CommandsHubProxy
-            //        .Invoke("ExecuteCommand", ClientToServerGeneralCommand.TakeNextPictureFragment, clientParam);
-            //}
-            //private async void receivePictureFragment(JObject serverParam)
-            //{
-            //    var nextPicFrag = (string)serverParam.SelectToken("nextPicFrag");
-            //    var isLast      = (bool)serverParam.SelectToken("isLast");
-
-            //    PicFrags.Add(nextPicFrag);
-
-            //    if (isLast)
-            //    {
-            //        var strBuilder = new StringBuilder();
-
-            //        foreach (var frag in PicFrags)
-            //        {
-            //            strBuilder.Append(frag);
-            //        }
-
-            //        byte[] pictureData = Convert.FromBase64String(strBuilder.ToString());
-
-            //        using (var memoryStream = new MemoryStream(pictureData))
-            //        {
-            //             memoryStream.Position = 0;
-
-            //            ClientController.MainWindow.Dispatcher.Invoke(() =>
-            //            {
-            //                BitmapImage bitmapImage = new BitmapImage();
-            //                bitmapImage.BeginInit();
-            //                bitmapImage.StreamSource = memoryStream;
-            //                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-            //                bitmapImage.EndInit();
-                            
-            //                var brush = new ImageBrush(bitmapImage);
-            //                ClientController.MainWindow.RemoteScreenDisplay.Background = brush;
-            //            });
-            //        }
-
-            //        PicFrags.Clear();
-            //    }
-
-            //    var clientParam = new JObject();
-            //    clientParam["broadcasterID"] = ClientController.BroadcasterID;
-            //    clientParam["receiverID"] = ClientController.User.ID;
-
-            //    await ClientController.CommandsHubProxy
-            //        .Invoke("ExecuteCommand", ClientToServerGeneralCommand.GiveNextPictureFragment, clientParam);
-            //}
         }
     }
 }

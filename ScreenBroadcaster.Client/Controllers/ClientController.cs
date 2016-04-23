@@ -256,10 +256,8 @@ namespace ScreenBroadcaster.Client.Controllers
         {
             PicturesHubProxy = HubConnection.CreateHubProxy("PicturesHub");
 
-            var context = SynchronizationContext.Current;
-
             PicturesHubProxy.On<ServerToClientPictureCommand, JObject>(
-                "ExecuteCommand", (command, serverParam) => context.Post(delegate { PicCommandsExecutor.ExecuteCommand(command, serverParam); }, null));
+                "ExecuteCommand", (command, serverParam) => PicCommandsExecutor.ExecuteCommand(command, serverParam));
         }
 
         private bool isUserNameValid()

@@ -21,10 +21,7 @@ namespace ScreenBroadcaster.Client.Controllers
             :base(clientController)
         {
             setupHandlers();
-
-            //ScreenCapturer  = new ScreenCapturer();
-            //CurrFragment    = 0;
-            PicFrags        = new List<string>();
+            PicFrags = new List<string>();
         }
 
         protected override void setupHandlers()
@@ -36,8 +33,6 @@ namespace ScreenBroadcaster.Client.Controllers
 
         private void receiveNewPicture(JObject serverParam)
         {
-            // TODO: implement.
-
             var nextPicFrag = (string)serverParam.SelectToken("nextPicFrag");
             var isLast = (bool)serverParam.SelectToken("isLast");
             var fragNumber = (int)serverParam.SelectToken("fragNumber");
@@ -55,37 +50,26 @@ namespace ScreenBroadcaster.Client.Controllers
                 {
                     strBuilder.Append(frag);
                 }
-
-                //lock (new object())
-                //{
                 
-                    ClientController.MainWindow.Dispatcher.Invoke(() =>
+                ClientController.MainWindow.Dispatcher.Invoke(() =>
+                {
+                    byte[] pictureData = Convert.FromBase64String(strBuilder.ToString());
+                    using (var memoryStream = new MemoryStream(pictureData))
                     {
-                        byte[] pictureData = Convert.FromBase64String(strBuilder.ToString());
-                        using (var memoryStream = new MemoryStream(pictureData))
-                        {
-                            memoryStream.Position = 0;
-                            BitmapImage bitmapImage = new BitmapImage();
-                            bitmapImage.BeginInit();
-                            bitmapImage.StreamSource = memoryStream;
-                            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                            bitmapImage.EndInit();
+                        memoryStream.Position = 0;
+                        BitmapImage bitmapImage = new BitmapImage();
+                        bitmapImage.BeginInit();
+                        bitmapImage.StreamSource = memoryStream;
+                        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                        bitmapImage.EndInit();
 
-                            var brush = new ImageBrush(bitmapImage);
-                            ClientController.MainWindow.RemoteScreenDisplay.Background = brush;
-                        }
-                    });
-                //}
+                        var brush = new ImageBrush(bitmapImage);
+                        ClientController.MainWindow.RemoteScreenDisplay.Background = brush;
+                    }
+                });
 
                 PicFrags.Clear();
             }
-
-            //var clientParam = new JObject();
-            //clientParam["broadcasterID"] = ClientController.BroadcasterID;
-            //clientParam["receiverID"] = ClientController.User.ID;
-
-            //await ClientController.CommandsHubProxy
-            //    .Invoke("ExecuteCommand", ClientToServerGeneralCommand.GiveNextPictureFragment, clientParam);
         }
     }
 }
