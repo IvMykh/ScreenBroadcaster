@@ -60,5 +60,10 @@ namespace ScreenBroadcaster.Client
         {
             _clientController = new ClientController(this);
         }
+
+        private void sendMessageButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

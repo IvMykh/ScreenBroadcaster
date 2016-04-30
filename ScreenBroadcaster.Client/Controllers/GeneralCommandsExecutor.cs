@@ -40,7 +40,7 @@ namespace ScreenBroadcaster.Client.Controllers
                 Handlers[ServerToClientGeneralCommand.NotifyStopReceiving]              = notifyStopReceiving;
                 Handlers[ServerToClientGeneralCommand.NotifyStopBroadcasting]           = notifyStopBroadcasting;
                 Handlers[ServerToClientGeneralCommand.ForceStopReceiving]               = forceStopReceiving;
-
+                Handlers[ServerToClientGeneralCommand.ReceiveMessage]                   = sendMessage;
                 // тут додати обробника відповідної команди від сервера до клієнта.
             }
 
@@ -146,6 +146,16 @@ namespace ScreenBroadcaster.Client.Controllers
             {
                 ClientController.StopReceivingButton_Click(null, null);
             }
+            private void sendMessage(JObject serverParam)
+            {
+                var text = (string)serverParam.SelectToken("Message");
+                var name = (string)serverParam.SelectToken("Name");
+                ClientController.MainWindow.Dispatcher.Invoke(() =>
+                {
+                    ClientController.MainWindow.ChatRichTextBox.AppendText(
+                        String.Format("{0}: {1}\r",name, text));         
+                });
+            }
         }
     }
-}
+} 

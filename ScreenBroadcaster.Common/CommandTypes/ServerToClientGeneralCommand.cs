@@ -14,6 +14,7 @@ namespace ScreenBroadcaster.Common.CommandTypes
         NotifyStopReceiving,
         NotifyStopBroadcasting,
         ForceStopReceiving,
+        ReceiveMessage,
 
         // for pictures
         MakePictureFragment,

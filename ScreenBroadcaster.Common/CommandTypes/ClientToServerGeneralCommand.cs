@@ -13,6 +13,7 @@ namespace ScreenBroadcaster.Common.CommandTypes
         RegisterNewReceiver,
         StopReceiving,
         StopBroadcasting,
+        SendMessage,
 
         // for pictures
         GiveNextPictureFragment,

@@ -43,6 +43,7 @@ namespace ScreenBroadcaster.Server.Hubs
             handlers[ClientToServerGeneralCommand.RegisterNewReceiver]      = registerNewReceiver;
             handlers[ClientToServerGeneralCommand.StopReceiving]            = stopReceiving;
             handlers[ClientToServerGeneralCommand.StopBroadcasting]         = stopBroadcasting;
+            handlers[ClientToServerGeneralCommand.SendMessage]              = sendMessage;
 
             // тут додати обробника для відповідної команди від клієнта.
             
@@ -191,6 +192,27 @@ namespace ScreenBroadcaster.Server.Hubs
             await Clients.Caller.ExecuteCommand(
                 ServerToClientGeneralCommand.NotifyStopBroadcasting, serverParam);
             
+        }
+        private async void sendMessage(JObject clientParam)
+        { 
+            var bcasterId = (Guid)clientParam.SelectToken("BroadcasterID");
+            var id = (Guid)clientParam.SelectToken("ID");
+            
+
+            if (bcasterId == Guid.Empty)
+            {
+                bcasterId = id;
+            }
+                 
+            var receiverIDs = _data.BcastRecDictionary[bcasterId];
+            var receiversIDsOnHub = (from recID in receiverIDs
+                                         join user in _data.Users on recID equals user.ID
+                                         select user.ClientIdOnHub)
+                                            .ToList<string>();
+                receiversIDsOnHub.Add(_data.Users.Find(u => u.ID.Equals(bcasterId)).ClientIdOnHub);
+                await Clients.Clients(receiversIDsOnHub).ExecuteCommand(
+                ServerToClientGeneralCommand.ReceiveMessage, clientParam);      
+
         }
 
         public void ExecuteCommand(ClientToServerGeneralCommand command, JObject argument)

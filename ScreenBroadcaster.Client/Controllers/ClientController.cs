@@ -69,6 +69,7 @@ namespace ScreenBroadcaster.Client.Controllers
             _clientMainWindow.ReceiveButton.Click               += ReceiveButton_Click;
             _clientMainWindow.StopReceivingButton.Click         += StopReceivingButton_Click;
             _clientMainWindow.StopBroadcastingButton.Click      += StopBroadcastingButton_Click;
+            _clientMainWindow.SendMessageButton.Click           += ButtonSend_Click;
         }
         
 
@@ -356,6 +357,20 @@ namespace ScreenBroadcaster.Client.Controllers
             {
                 _clientMainWindow.ChatUI.Visibility = Visibility.Collapsed;
             }
+        }
+        private async void ButtonSend_Click(object sender, RoutedEventArgs e)
+        {
+            var clientParam = new JObject();
+                clientParam["ID"] = User.ID;
+                clientParam["Name"] = User.Name;
+                clientParam["Message"] = _clientMainWindow.MessageTextBox.Text;
+                clientParam["BroadcasterID"] = (BroadcasterID == null)? Guid.Empty: BroadcasterID ;
+  
+            
+            await CommandsHubProxy.Invoke(
+                "ExecuteCommand", ClientToServerGeneralCommand.SendMessage, clientParam);
+           _clientMainWindow.MessageTextBox.Text = String.Empty;
+           _clientMainWindow.MessageTextBox.Focus();
         }
     }
 }
