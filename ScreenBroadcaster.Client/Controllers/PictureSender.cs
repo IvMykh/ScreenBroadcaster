@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading;
 using Newtonsoft.Json.Linq;
+using ScreenBroadcaster.Client.Controllers.Helpers;
 using ScreenBroadcaster.Client.Properties;
-using ScreenBroadcaster.Client.ScreenCapturing;
 using ScreenBroadcaster.Common;
 using ScreenBroadcaster.Common.CommandTypes;
 
@@ -10,25 +10,22 @@ namespace ScreenBroadcaster.Client.Controllers
 {
     public partial class ClientController
     {
-        public partial class PictureSender
+        internal partial class PictureSender
             : IDisposable
         {
             // Instance members.
-            //private int             _counter;
             private Timer           _timer;
 
             public ClientController ClientController    { get; private set; }
             public ScreenCapturer   ScreenCapturer      { get; private set; }
             public int              CurrFragment        { get; private set; }
-            
             public int              GenerationFrequency { get; private set; }
             public bool             IsDisposed          { get; private set; }
 
             public PictureSender(int generationFrequency, ClientController controller)
             {
                 _timer              = null;
-                //_counter            = 0;
-
+                
                 ClientController    = controller;
                 ScreenCapturer      = new ScreenCapturer();
                 CurrFragment        = 0;
@@ -48,7 +45,6 @@ namespace ScreenBroadcaster.Client.Controllers
                     IsDisposed = false;
                 }
             }
-
             public void Stop()
             {
                 if (_timer != null)
@@ -57,6 +53,14 @@ namespace ScreenBroadcaster.Client.Controllers
                     _timer = null;
                     IsDisposed = true;
                 }
+            }
+            public void Dispose()
+            {
+                if (!IsDisposed)
+                {
+                    Stop();
+                }
+                IsDisposed = true;
             }
 
             private void sendNextPicture()
@@ -90,17 +94,6 @@ namespace ScreenBroadcaster.Client.Controllers
                     MsgReporter.Instance.ReportError(
                         ioe.Message, Resources.CommandExecErrorCaption);
                 }
-
-                //return true;
-            }
-
-            public void Dispose()
-            {
-                if (!IsDisposed)
-                {
-                    Stop();
-                }
-                IsDisposed = true;
             }
         }
     }

@@ -147,6 +147,9 @@
   <data name="OperationFailedMsg" xml:space="preserve">
     <value>Operation failed due to server connection issues.</value>
   </data>
+  <data name="PictureBlockSizeInKb" xml:space="preserve">
+    <value>125</value>
+  </data>
   <data name="ReceiverStateChangedMsgFormat" xml:space="preserve">
     <value>User {0} ({1}) {2} your broadcast.</value>
   </data>

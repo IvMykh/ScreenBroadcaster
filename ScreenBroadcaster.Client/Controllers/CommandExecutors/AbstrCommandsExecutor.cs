@@ -8,7 +8,7 @@ using ScreenBroadcaster.Common.CommandTypes;
 
 namespace ScreenBroadcaster.Client.Controllers
 {
-    public abstract class AbstrCommandsExecutor<CommandType>
+    internal abstract class AbstrCommandsExecutor<CommandType>
         where CommandType : struct, IConvertible
     {
         protected IDictionary<

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Windows;
+using System.Configuration;
 using Newtonsoft.Json.Linq;
 using ScreenBroadcaster.Client.Properties;
 using ScreenBroadcaster.Common;
@@ -9,7 +9,7 @@ namespace ScreenBroadcaster.Client.Controllers
 {
     public partial class ClientController
     {
-        public partial class GeneralCommandsExecutor
+        internal partial class GeneralCommandsExecutor
             : AbstrCommandsExecutor<ServerToClientGeneralCommand>
         {
             private PictureSender   _pictureSender;
@@ -19,7 +19,8 @@ namespace ScreenBroadcaster.Client.Controllers
             {
                 setupHandlers();
 
-                _pictureSender = new PictureSender(160, clientController);
+                var picGenFreq = int.Parse(ConfigurationManager.AppSettings["PictureGenerationFrequency"]);
+                _pictureSender = new PictureSender(picGenFreq, clientController);
             }
 
             public void StopBroadcast()
@@ -80,19 +81,15 @@ namespace ScreenBroadcaster.Client.Controllers
                 {
                     case BroadcastSpecialState.FirstReceiverJoined:
                         {
-                            // TODO: start passing pictures.
                             _pictureSender.Start();
-                            //_pictureSender.sendNextPicture();
                         } break;
                     case BroadcastSpecialState.LastReceiverLeft:
                         { 
-                            // TODO: stop passing pictures.
                             _pictureSender.Stop();
                         } break;
                     case BroadcastSpecialState.None:
-                    default:
-                        {
-                            // Do nothing.
+                    default: 
+                        { 
                         } break;
                 }
             }

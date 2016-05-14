@@ -3,25 +3,27 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Windows;
+using ScreenBroadcaster.Client.Properties;
 
-namespace ScreenBroadcaster.Client.ScreenCapturing
+namespace ScreenBroadcaster.Client.Controllers.Helpers
 {
     public class ScreenCapturer
     {
-        public const int PIC_BLOCK_SIZE = 125 * 1024;
-        public const int CHARS_IN_BLOCK = PIC_BLOCK_SIZE / 2;
-
         public static int ScreenWidth   { get; private set; }
         public static int ScreenHeight  { get; private set; }
+        public static int CharsInBlock  { get; private set; }
 
         static ScreenCapturer()
         {
             ScreenWidth     = (int)SystemParameters.PrimaryScreenWidth;
             ScreenHeight    = (int)SystemParameters.PrimaryScreenHeight;
+
+            var picBlockSizeInKb = int.Parse(Resources.PictureBlockSizeInKb) * 1024;
+            CharsInBlock = picBlockSizeInKb / 2;
         }
 
-        public Image Screenshot { get; private set; }
-        public string[] ScreenshotAsBase64Strings { get; private set; }
+        public Image    Screenshot                  { get; private set; }
+        public string[] ScreenshotAsBase64Strings   { get; private set; }
 
         ~ScreenCapturer()
         {
@@ -51,9 +53,8 @@ namespace ScreenBroadcaster.Client.ScreenCapturing
             ScreenshotAsBase64Strings = getScreenshotAsBase64Strings();
         }
 
-        private ImageCodecInfo GetEncoder(ImageFormat format)
+        private ImageCodecInfo getEncoder(ImageFormat format)
         {
-
             ImageCodecInfo[] codecs = ImageCodecInfo.GetImageDecoders();
 
             foreach (ImageCodecInfo codec in codecs)
@@ -65,7 +66,6 @@ namespace ScreenBroadcaster.Client.ScreenCapturing
             }
             return null;
         }
-
         private string[] getScreenshotAsBase64Strings()
         {
             string base64Representation = null;
@@ -73,7 +73,7 @@ namespace ScreenBroadcaster.Client.ScreenCapturing
 
             using (var stream = new MemoryStream())
             {
-                ImageCodecInfo jpgEncoder = GetEncoder(ImageFormat.Jpeg);
+                ImageCodecInfo jpgEncoder = getEncoder(ImageFormat.Jpeg);
                 System.Drawing.Imaging.Encoder myEncoder = System.Drawing.Imaging.Encoder.Quality;
                 EncoderParameters myEncoderParameters = new EncoderParameters(1);
 
@@ -86,42 +86,17 @@ namespace ScreenBroadcaster.Client.ScreenCapturing
                 base64Representation = Convert.ToBase64String(imageBytes);
             }
 
-            string[] base64Strings = new string[base64Representation.Length / CHARS_IN_BLOCK + 1];
+            string[] base64Strings = new string[base64Representation.Length / CharsInBlock + 1];
 
             int i = 0;
             for (; i < base64Strings.Length - 1; i++)
             {
                 base64Strings[i] = base64Representation
-                    .Substring(i * CHARS_IN_BLOCK, CHARS_IN_BLOCK);
+                    .Substring(i * CharsInBlock, CharsInBlock);
             }
-            base64Strings[base64Strings.Length - 1] = base64Representation.Substring(i * CHARS_IN_BLOCK);
+            base64Strings[base64Strings.Length - 1] = base64Representation.Substring(i * CharsInBlock);
 
             return base64Strings;
         }
-
-        //private string[] getScreenshotAsBase64Strings()
-        //{
-        //    string base64Representation = null;
-        //    byte[] imageBytes = null;
-
-        //    using (var stream = new MemoryStream())
-        //    {
-        //        ImageCodecInfo jpgEncoder = GetEncoder(ImageFormat.Jpeg);
-        //        System.Drawing.Imaging.Encoder myEncoder = System.Drawing.Imaging.Encoder.Quality;
-        //        EncoderParameters myEncoderParameters = new EncoderParameters(1);
-
-        //        EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder, 15L);
-        //        myEncoderParameters.Param[0] = myEncoderParameter;
-
-        //        Screenshot.Save(stream, jpgEncoder, myEncoderParameters);
-        //        imageBytes = stream.ToArray();
-
-        //        base64Representation = Convert.ToBase64String(imageBytes);
-        //    }
-
-        //    string[] base64Strings = new string[1] { base64Representation };
-
-        //    return base64Strings;
-        //}
     }
 }

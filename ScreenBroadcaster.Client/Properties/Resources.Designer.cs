@@ -151,6 +151,15 @@ namespace ScreenBroadcaster.Client.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 125.
+        /// </summary>
+        internal static string PictureBlockSizeInKb {
+            get {
+                return ResourceManager.GetString("PictureBlockSizeInKb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to User {0} ({1}) {2} your broadcast..
         /// </summary>
         internal static string ReceiverStateChangedMsgFormat {

@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
-using ScreenBroadcaster.Client.ScreenCapturing;
+using ScreenBroadcaster.Client.Controllers.Helpers;
 using ScreenBroadcaster.Common.CommandTypes;
 
 namespace ScreenBroadcaster.Client.Controllers
 {
-    public class PictureCommandsExecutor
+    internal class PictureCommandsExecutor
         : AbstrCommandsExecutor<ServerToClientPictureCommand>
     {
         public List<string>     PicFrags        { get; private set; }
@@ -41,10 +39,9 @@ namespace ScreenBroadcaster.Client.Controllers
                 PicFrags.Add(nextPicFrag);
             }
 
-            if (isLast &&  PicFrags.Count > 0) //fragNumber
+            if (isLast &&  PicFrags.Count > 0)
             {
-                var strBuilder = new StringBuilder(PicFrags.Count * ScreenCapturer.CHARS_IN_BLOCK);
-
+                var strBuilder = new StringBuilder(PicFrags.Count * ScreenCapturer.CharsInBlock);
                 foreach (var frag in PicFrags)
                 {
                     strBuilder.Append(frag);

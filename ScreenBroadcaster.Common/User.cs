@@ -16,10 +16,4 @@ namespace ScreenBroadcaster.Common
         // id для спілкування через SignalR.
         public string   ClientIdOnHub   { get; set; }
     }
-
-    public enum UserType
-    {
-        Broadcaster,
-        Receiver
-    }
 }
