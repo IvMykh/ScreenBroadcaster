@@ -11,30 +11,20 @@ using Newtonsoft.Json.Linq;
 
 using ScreenBroadcaster.Common;
 using ScreenBroadcaster.Common.CommandTypes;
+using System.Threading;
+using ScreenBroadcaster.Server.Properties;
 
 namespace ScreenBroadcaster.Server.Hubs
 {
     public class CommandsHub
-        : Hub
+        : AbstrHub<ClientToServerGeneralCommand>
     {
-        // Static members.
-        private static HubData _data;
-
-        static CommandsHub()
-        {
-            _data = HubData.Instance;
-        }
-
-        // Instance members.
-        private IDictionary<
-            ClientToServerGeneralCommand, Action<JObject>> _handlers;
-
         public CommandsHub()
+            : base()
         {
-            _handlers           = setupHandlers();
         }
 
-        private IDictionary<
+        protected override IDictionary<
             ClientToServerGeneralCommand, Action<JObject>> setupHandlers()
         {
             var handlers = new Dictionary<ClientToServerGeneralCommand, Action<JObject>>();
@@ -63,14 +53,26 @@ namespace ScreenBroadcaster.Server.Hubs
                 ClientIdOnHub = Context.ConnectionId
             };
 
-            _data.Users.Add(user);
+            Data.Users.Add(user);
             
-            _data.BcastRecDictionary[user.ID] = new List<Guid>();
+            Data.BcastRecDictionary[user.ID] = new List<Guid>();
 
             var serverParam = new JObject();
-            serverParam["message"] = "You have been successfully registered as a Broadcaster.";
-            serverParam["caption"] = "Registration succeeded!";
+            serverParam["message"] = Resources.BcasterRegistrationOkMsg;
+            serverParam["caption"] = Resources.RegistrationOkCaption;
             serverParam["userType"] = "Broadcaster";
+
+#if DEBUG
+            var clipboardOpThread = new Thread(() => 
+                {
+                    Clipboard.Clear();
+                    Clipboard.SetText(user.ID.ToString());
+                }
+            );
+
+            clipboardOpThread.SetApartmentState(ApartmentState.STA);
+            clipboardOpThread.Start();
+#endif
 
             await Clients.Caller.ExecuteCommand(ServerToClientGeneralCommand.ReportSuccessfulRegistration, serverParam);
         }      
@@ -85,14 +87,14 @@ namespace ScreenBroadcaster.Server.Hubs
 
             var bcasterId = (Guid)clientParam.SelectToken("BroadcasterID");
             List<Guid> receivers = null;
-            bool bcasterExists =_data.BcastRecDictionary.TryGetValue(bcasterId, out receivers);
+            bool bcasterExists = Data.BcastRecDictionary.TryGetValue(bcasterId, out receivers);
 
             var serverParamForCaller = new JObject();
 
             if (!bcasterExists)
             {
-                serverParamForCaller["message"] = "Registration failed: specified Broadcaster does not exist.";
-                serverParamForCaller["caption"] = "Registration failed!";
+                serverParamForCaller["message"] = Resources.BcasterDoesNotExistMsg;
+                serverParamForCaller["caption"] = Resources.RegistrationFailedCaption;
 
                 await Clients.Caller.ExecuteCommand(
                     ServerToClientGeneralCommand.ReportFailedRegistration, serverParamForCaller);
@@ -100,13 +102,13 @@ namespace ScreenBroadcaster.Server.Hubs
                 return;
             }
 
-            User bcaster = _data.Users.Find(user => user.ID.CompareTo(bcasterId) == 0);
+            User bcaster = Data.Users.Find(user => user.ID.CompareTo(bcasterId) == 0);
 
-            _data.Users.Add(newReceiver);
-            _data.BcastRecDictionary[bcasterId].Add(newReceiver.ID);
+            Data.Users.Add(newReceiver);
+            Data.BcastRecDictionary[bcasterId].Add(newReceiver.ID);
 
-            serverParamForCaller["message"] = "You have been successfully registered as a Receiver.";
-            serverParamForCaller["caption"] = "Registration succeeded!";
+            serverParamForCaller["message"] = Resources.ReceiverRegistrationOkMsg;
+            serverParamForCaller["caption"] = Resources.RegistrationOkCaption;
             serverParamForCaller["userType"] = "Receiver";
 
             Clients.Caller.ExecuteCommand(
@@ -118,7 +120,7 @@ namespace ScreenBroadcaster.Server.Hubs
             serverParamForBcaster["state"] = "joined";
 
             var bcastState = BroadcastSpecialState.None;
-            if (receivers.Count == 1)
+            if (Data.BcastRecDictionary[bcasterId].Count == 1) // receivers.Count == 1
             {
                 bcastState = BroadcastSpecialState.FirstReceiverJoined;
             }
@@ -134,15 +136,15 @@ namespace ScreenBroadcaster.Server.Hubs
             var bcasterId = (Guid)clientParam.SelectToken("BroadcasterID");
 
             List<Guid> receivers = null;
-            bool keyExists = _data.BcastRecDictionary.TryGetValue(bcasterId, out receivers);
+            bool keyExists = Data.BcastRecDictionary.TryGetValue(bcasterId, out receivers);
 
-            User caller = _data.Users.Find(user => user.ID.Equals(callerId));
+            User caller = Data.Users.Find(user => user.ID.Equals(callerId));
 
             if (keyExists)
             {
                 receivers.Remove(callerId);
 
-                User bcaster = _data.Users.Find(user => user.ID.Equals(bcasterId));
+                User bcaster = Data.Users.Find(user => user.ID.Equals(bcasterId));
 
                 var serverParamForBcaster = new JObject();
                 serverParamForBcaster["receiverName"] = caller.Name;
@@ -161,7 +163,7 @@ namespace ScreenBroadcaster.Server.Hubs
                         ServerToClientGeneralCommand.NotifyReceiverStateChange, serverParamForBcaster);
             }
             
-            _data.Users.Remove(caller);
+            Data.Users.Remove(caller);
             
             var serverParamForCaller = new JObject();
             serverParamForCaller["isSuccess"] = true;
@@ -174,17 +176,17 @@ namespace ScreenBroadcaster.Server.Hubs
         private async void stopBroadcasting(JObject clientParam)
         {
             var bcasterId = (Guid)clientParam.SelectToken("BroadcasterID");
-            var receiverIDs = _data.BcastRecDictionary[bcasterId];
+            var receiverIDs = Data.BcastRecDictionary[bcasterId];
 
             var receiversIDsOnHub = (from recID in receiverIDs 
-                                     join user in _data.Users on recID equals user.ID
+                                     join user in Data.Users on recID equals user.ID
                                      select user.ClientIdOnHub)
                                         .ToList<string>();
 
             await Clients.Clients(receiversIDsOnHub).ExecuteCommand(
                 ServerToClientGeneralCommand.ForceStopReceiving, new JObject());
 
-            _data.BcastRecDictionary.Remove(bcasterId);
+            Data.BcastRecDictionary.Remove(bcasterId);
 
             var serverParam = new JObject();
             serverParam["isSuccess"] = true;
@@ -204,37 +206,16 @@ namespace ScreenBroadcaster.Server.Hubs
                 bcasterId = id;
             }
                  
-            var receiverIDs = _data.BcastRecDictionary[bcasterId];
+            var receiverIDs = Data.BcastRecDictionary[bcasterId];
             var receiversIDsOnHub = (from recID in receiverIDs
-                                         join user in _data.Users on recID equals user.ID
-                                         select user.ClientIdOnHub)
-                                            .ToList<string>();
-                receiversIDsOnHub.Add(_data.Users.Find(u => u.ID.Equals(bcasterId)).ClientIdOnHub);
-                await Clients.Clients(receiversIDsOnHub).ExecuteCommand(
+                                     join user in Data.Users on recID equals user.ID
+                                     select user.ClientIdOnHub)
+                                     .ToList<string>();
+            
+            receiversIDsOnHub.Add(Data.Users.Find(u => u.ID.Equals(bcasterId)).ClientIdOnHub);
+            
+            await Clients.Clients(receiversIDsOnHub).ExecuteCommand(
                 ServerToClientGeneralCommand.ReceiveMessage, clientParam);      
-
-        }
-
-        public void ExecuteCommand(ClientToServerGeneralCommand command, JObject argument)
-        {
-            _handlers[command](argument);
-        }
-
-        public override Task OnConnected()
-        {
-            //Use Application.Current.Dispatcher to access UI thread from outside the MainWindow class
-            Application.Current.Dispatcher.Invoke(() =>
-                ((ServerMainWindow)Application.Current.MainWindow).ServerController.WriteToConsole("Client connected: " + Context.ConnectionId));
-
-            return base.OnConnected();
-        }
-        public override Task OnDisconnected()
-        {
-            //Use Application.Current.Dispatcher to access UI thread from outside the MainWindow class
-            Application.Current.Dispatcher.Invoke(() =>
-                ((ServerMainWindow)Application.Current.MainWindow).ServerController.WriteToConsole("Client disconnected: " + Context.ConnectionId));
-
-            return base.OnDisconnected();
         }
     }
 }

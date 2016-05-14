@@ -1,7 +1,7 @@
 ﻿<Window x:Class="ScreenBroadcaster.Server.ServerMainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Server Console" Height="300" Width="300" Initialized="Window_Initialized" MinWidth="250" MinHeight="150">
+        Title="Server Console" Height="300" Width="500" Initialized="Window_Initialized" MinWidth="250" MinHeight="150">
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Button x:Name="startButton" x:FieldModifier="private" Content="Start" 
                 HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="100" />

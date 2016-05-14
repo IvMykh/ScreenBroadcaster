@@ -25,6 +25,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisIgnoreGeneratedCode>true</CodeAnalysisIgnoreGeneratedCode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -79,7 +81,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controllers\CommandsExecutor.cs" />
+    <Compile Include="Controllers\AbstrCommandsExecutor.cs" />
     <Compile Include="Controllers\PictureCommandsExecutor.cs" />
     <Compile Include="Controllers\GeneralCommandsExecutor.cs" />
     <Compile Include="Controllers\PictureSender.cs" />

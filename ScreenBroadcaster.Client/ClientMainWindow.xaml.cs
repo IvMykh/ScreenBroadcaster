@@ -19,35 +19,35 @@ namespace ScreenBroadcaster.Client
 
         // Properties;
         /*Common UI*/
-        public Grid         CommonUI { get { return commonUI; } }
+        public Grid         CommonUI        { get { return commonUI; } }
         public TextBox      UserNameTextBox { get { return userNameTextBox; } }
-        public TextBox      UserIDTextBox { get { return userIDTextBox; } }
+        public TextBox      UserIDTextBox   { get { return userIDTextBox; } }
 
         /*Sign in UI*/
-        public Grid         SignInUI { get { return signInUI; } }
-        public Button       BroadcastButton { get { return broadcastButton; } }
-        public Button       ReceiveButton { get { return receiveButton; } }
-        public TextBox      BroadcasterIdTextBox { get { return broadcasterIdTextBox; } }
+        public Grid         SignInUI                { get { return signInUI; } }
+        public Button       BroadcastButton         { get { return broadcastButton; } }
+        public Button       ReceiveButton           { get { return receiveButton; } }
+        public TextBox      BroadcasterIdTextBox    { get { return broadcasterIdTextBox; } }
 
         /*Group Grid*/
         public Grid         GroupGrid { get { return groupGrid; } }
 
         /*Broadcast UI*/
-        public Grid         BroadcastUI { get { return broadcastUI; } }
-        public Button       StopBroadcastingButton { get { return stopBroadcastButton; } }
+        public Grid         BroadcastUI             { get { return broadcastUI; } }
+        public Button       StopBroadcastingButton  { get { return stopBroadcastButton; } }
 
         /*Receive UI*/
-        public Grid         ReceiveUI { get { return receiveUI; } }
-        public Button       StopReceivingButton { get { return stopReceivingButton; } }
-        public RichTextBox  LogRichTextBox { get { return logRichTextBox; } }
+        public Grid         ReceiveUI                       { get { return receiveUI; } }
+        public Button       StopReceivingButton             { get { return stopReceivingButton; } }
+        public RichTextBox  LogRichTextBox                  { get { return logRichTextBox; } }
         public TextBox      BroadcasterIDForReceiverTextBox { get { return broadcasterIDForReceiverTextBox; } }
-        public Canvas       RemoteScreenDisplay { get { return remoteScreenDisplay; } }
+        public Canvas       RemoteScreenDisplay             { get { return remoteScreenDisplay; } }
 
         /*Chat UI*/
-        public Grid         ChatUI { get { return chatUI; } }
-        public RichTextBox  ChatRichTextBox { get { return chatRichTextBox; } }
-        public TextBox      MessageTextBox { get { return messageTextBox; } }
-        public Button       SendMessageButton { get { return sendMessageButton; } }
+        public Grid         ChatUI              { get { return chatUI; } }
+        public RichTextBox  ChatRichTextBox     { get { return chatRichTextBox; } }
+        public TextBox      MessageTextBox      { get { return messageTextBox; } }
+        public Button       SendMessageButton   { get { return sendMessageButton; } }
 
 
         // Methods.
@@ -59,11 +59,6 @@ namespace ScreenBroadcaster.Client
         private void Window_Initialized(object sender, EventArgs e)
         {
             _clientController = new ClientController(this);
-        }
-
-        private void sendMessageButton_Click(object sender, RoutedEventArgs e)
-        {
-
         }
     }
 }

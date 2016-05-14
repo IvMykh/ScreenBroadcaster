@@ -1,18 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Windows;
 using System.IO;
+using System.Windows;
 
 namespace ScreenBroadcaster.Client.ScreenCapturing
 {
     public class ScreenCapturer
     {
-        public const int PIC_BLOCK_SIZE = 32 * 1024;
+        public const int PIC_BLOCK_SIZE = 125 * 1024;
         public const int CHARS_IN_BLOCK = PIC_BLOCK_SIZE / 2;
 
         public static int ScreenWidth   { get; private set; }
@@ -102,5 +98,30 @@ namespace ScreenBroadcaster.Client.ScreenCapturing
 
             return base64Strings;
         }
+
+        //private string[] getScreenshotAsBase64Strings()
+        //{
+        //    string base64Representation = null;
+        //    byte[] imageBytes = null;
+
+        //    using (var stream = new MemoryStream())
+        //    {
+        //        ImageCodecInfo jpgEncoder = GetEncoder(ImageFormat.Jpeg);
+        //        System.Drawing.Imaging.Encoder myEncoder = System.Drawing.Imaging.Encoder.Quality;
+        //        EncoderParameters myEncoderParameters = new EncoderParameters(1);
+
+        //        EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder, 15L);
+        //        myEncoderParameters.Param[0] = myEncoderParameter;
+
+        //        Screenshot.Save(stream, jpgEncoder, myEncoderParameters);
+        //        imageBytes = stream.ToArray();
+
+        //        base64Representation = Convert.ToBase64String(imageBytes);
+        //    }
+
+        //    string[] base64Strings = new string[1] { base64Representation };
+
+        //    return base64Strings;
+        //}
     }
 }

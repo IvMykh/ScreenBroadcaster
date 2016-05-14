@@ -10,26 +10,14 @@ using ScreenBroadcaster.Common.CommandTypes;
 namespace ScreenBroadcaster.Server.Hubs
 {
     public class PicturesHub
-        : Hub
+        : AbstrHub<ClientToServerPictureCommand>
     {
-        // Static members.
-        private static HubData _data;
-
-        static PicturesHub()
-        {
-            _data = HubData.Instance;
-        }
-
-        // Instance members.
-        private IDictionary<
-            ClientToServerPictureCommand, Action<JObject>> _handlers;
-
         public PicturesHub()
+            : base()
         {
-            _handlers           = setupHandlers();
         }
 
-        private IDictionary<
+        protected override IDictionary<
             ClientToServerPictureCommand, Action<JObject>> setupHandlers()
         {
             var handlers = new Dictionary<ClientToServerPictureCommand, Action<JObject>>();
@@ -48,13 +36,12 @@ namespace ScreenBroadcaster.Server.Hubs
             var isLast = (bool)clientParam.SelectToken("isLast");
 
             List<Guid> receiverIDs = null;
-            bool keyExists = _data.BcastRecDictionary.TryGetValue(bcasterId, out receiverIDs);
-
+            bool keyExists = Data.BcastRecDictionary.TryGetValue(bcasterId, out receiverIDs);
 
             if (keyExists)
             {
                 var receiversIDsOnHub = (from recID in receiverIDs
-                                         join user in _data.Users on recID equals user.ID
+                                         join user in Data.Users on recID equals user.ID
                                          select user.ClientIdOnHub)
                                             .ToList<string>();
 
@@ -65,11 +52,6 @@ namespace ScreenBroadcaster.Server.Hubs
                 Clients.Clients(receiversIDsOnHub).ExecuteCommand(
                     ServerToClientPictureCommand.ReceiveNewPicture, clientParam);
             }
-        }
-
-        public void ExecuteCommand(ClientToServerPictureCommand command, JObject argument)
-        {
-            _handlers[command](argument);
         }
     }
 }

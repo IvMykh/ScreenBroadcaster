@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Microsoft.AspNet.SignalR.Client;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using ScreenBroadcaster.Client.Properties;
 using ScreenBroadcaster.Common;
 using ScreenBroadcaster.Common.CommandTypes;
 
@@ -17,35 +13,34 @@ using ScreenBroadcaster.Common.CommandTypes;
 namespace ScreenBroadcaster.Client.Controllers
 {
     public partial class ClientController
+        //: IDisposable
     {
         public partial class GeneralCommandsExecutor { }
         public partial class PictureSender
             : IDisposable { }
 
         // Constants.
-        private const string                    SERVER_URI = "http://localhost:8080/signalr";
+        private const string            SERVER_URI = "http://localhost:8080/signalr";
 
-        // Instanse members.
-        private ClientMainWindow                _clientMainWindow;
+        // Instanse props.
+        public ClientMainWindow         MainWindow          { get; private set; }
 
-        public ClientMainWindow                 MainWindow { get { return _clientMainWindow; } }
+        public User                     User                { get; private set; }
+        public bool                     IsRegistered        { get; private set; }
+        public Guid?                    BroadcasterID       { get; private set; }
 
-        public User                             User                { get; private set; }
-        public bool                             IsRegistered        { get; private set; }
-        public Guid?                            BroadcasterID       { get; private set; }
+        public GeneralCommandsExecutor  GenCommandsExecutor { get; private set; }
+        public PictureCommandsExecutor  PicCommandsExecutor { get; private set; }
 
-        public GeneralCommandsExecutor          GenCommandsExecutor { get; private set; }
-        public PictureCommandsExecutor          PicCommandsExecutor { get; private set; }
+        public HubConnection            HubConnection       { get; private set; }
+        public IHubProxy                CommandsHubProxy    { get; private set; }
+        public IHubProxy                PicturesHubProxy    { get; private set; }
 
-        public IHubProxy                        CommandsHubProxy    { get; private set; }
-        public IHubProxy                        PicturesHubProxy    { get; private set; }
-        public HubConnection                    HubConnection       { get; private set; }
-
-
+        //public bool                     Disposed { get; private set; }
 
         public ClientController(ClientMainWindow clientMainWindow)
         {
-            _clientMainWindow = clientMainWindow;
+            MainWindow = clientMainWindow;
             setClientMainWindowEventsHandlers();
 
             User                = new User();
@@ -55,45 +50,70 @@ namespace ScreenBroadcaster.Client.Controllers
             GenCommandsExecutor = new GeneralCommandsExecutor(this);
             PicCommandsExecutor = new PictureCommandsExecutor(this);
 
-            // For convenience - remove later.
-            _clientMainWindow.UserNameTextBox.Text = "USER_NAME";
+            //Disposed            = false;
+
+#if DEBUG
+            MainWindow.UserNameTextBox.Text = Resources.DefaultUserName;
+#endif
         }
+
+        //~ClientController()
+        //{
+        //    cleanUp(false);
+        //}
+        //
+        //public void Dispose()
+        //{
+        //    cleanUp(true);
+        //    GC.SuppressFinalize(this);
+        //}
+        //
+        //private void cleanUp(bool disposing)
+        //{
+        //    if (!Disposed)
+        //    {
+        //        if (disposing)
+        //        {
+        //            HubConnection.Dispose();
+        //        }
+        //        HubConnection = null;
+        //    }
+        //
+        //    Disposed = true;
+        //}
 
         private void setClientMainWindowEventsHandlers()
         {
-            _clientMainWindow.Closing                           += _clientMainWindow_Closing;
-            _clientMainWindow.UserNameTextBox.TextChanged       += UserNameTextBox_TextChanged;
-            _clientMainWindow.BroadcasterIdTextBox.TextChanged  += BroadcasterIdTextBox_TextChanged;
+            MainWindow.Closing                          += mainWindow_Closing;
+            MainWindow.UserNameTextBox.TextChanged      += UserNameTextBox_TextChanged;
+            MainWindow.BroadcasterIdTextBox.TextChanged += BroadcasterIdTextBox_TextChanged;
 
-            _clientMainWindow.BroadcastButton.Click             += BroadcastButton_Click;
-            _clientMainWindow.ReceiveButton.Click               += ReceiveButton_Click;
-            _clientMainWindow.StopReceivingButton.Click         += StopReceivingButton_Click;
-            _clientMainWindow.StopBroadcastingButton.Click      += StopBroadcastingButton_Click;
-            _clientMainWindow.SendMessageButton.Click           += ButtonSend_Click;
+            MainWindow.BroadcastButton.Click        += BroadcastButton_Click;
+            MainWindow.ReceiveButton.Click          += ReceiveButton_Click;
+            MainWindow.StopReceivingButton.Click    += StopReceivingButton_Click;
+            MainWindow.StopBroadcastingButton.Click += StopBroadcastingButton_Click;
+            MainWindow.SendMessageButton.Click      += ButtonSend_Click;
         }
         
-
         // Events handlers.
-        private void _clientMainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void mainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (HubConnection != null)
             {
                 HubConnection.Stop();
-                HubConnection.Dispose();
             }
         }
 
         private void Connection_Closed()
         {
-            // Show login UI; hide broadcast and receive UI.
             var dispatcher = Application.Current.Dispatcher;
-
             dispatcher.Invoke(() =>
-            {
-                activateBroadcastUI(false);
-                activateReceiveUI(false);
-                activateSignInUI(true);
-            });
+                {
+                    activateBroadcastUI(false);
+                    activateReceiveUI(false);
+                    activateSignInUI(true);
+                }
+            );
         }
 
         private async void BroadcastButton_Click(object sender, RoutedEventArgs e)
@@ -105,7 +125,9 @@ namespace ScreenBroadcaster.Client.Controllers
                 bool shouldRegister = false;
                 if (HubConnection == null)
                 {
+                    enableBcastRecButtons(false);
                     shouldRegister = await ConnectAsync();
+                    enableBcastRecButtons(true);
                 }
                 
                 if (shouldRegister)
@@ -114,8 +136,19 @@ namespace ScreenBroadcaster.Client.Controllers
                     param["ID"] = User.ID;
                     param["Name"] = User.Name;
 
-                    await CommandsHubProxy.Invoke(
-                        "ExecuteCommand", ClientToServerGeneralCommand.RegisterNewBroadcaster, param);
+                    try
+                    {
+                        await CommandsHubProxy.Invoke(
+                            "ExecuteCommand", ClientToServerGeneralCommand.RegisterNewBroadcaster, param);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        HubConnection.Stop();
+                        HubConnection = null;
+
+                        MsgReporter.Instance.ReportError(
+                            Resources.OperationFailedMsg, Resources.ServerConnErrorCaption);
+                    }
 
                     if (IsRegistered)
                     {
@@ -134,7 +167,9 @@ namespace ScreenBroadcaster.Client.Controllers
                 bool shouldRegister = false;
                 if (HubConnection == null)
                 {
+                    enableBcastRecButtons(false);
                     shouldRegister = await ConnectAsync();
+                    enableBcastRecButtons(true);
                 }
 
                 if (shouldRegister)
@@ -144,23 +179,64 @@ namespace ScreenBroadcaster.Client.Controllers
                     clientParam["Name"] = User.Name;
                     clientParam["BroadcasterID"] = BroadcasterID;
 
-                    await CommandsHubProxy.Invoke(
-                        "ExecuteCommand", ClientToServerGeneralCommand.RegisterNewReceiver, clientParam);
+                    try
+                    {
+                        await CommandsHubProxy.Invoke(
+                            "ExecuteCommand", ClientToServerGeneralCommand.RegisterNewReceiver, clientParam);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        HubConnection.Stop();
+                        HubConnection = null;
+
+                        MsgReporter.Instance.ReportError(
+                            Resources.OperationFailedMsg, Resources.ServerConnErrorCaption);
+                    }
 
                     if (IsRegistered)
                     {
                         activateSignInUI(false);
                         activateReceiveUI(true);
                     }
+                    else
+                    {
+                        HubConnection.Dispose();
+                        HubConnection = null;
+                    }
                 }
             }
+        }
+
+        private async void StopBroadcastingButton_Click(object sender, RoutedEventArgs e)
+        {
+            var clientParam = new JObject();
+            clientParam["BroadcasterID"] = User.ID;
+
+            try
+            {
+                GenCommandsExecutor.StopBroadcast();
+
+                await CommandsHubProxy.Invoke(
+                    "ExecuteCommand", ClientToServerGeneralCommand.StopBroadcasting, clientParam);
+            }
+            catch (HttpRequestException)
+            {
+                reportHttpRequestException();
+            }
+            catch (InvalidOperationException)
+            {
+                MsgReporter.Instance.ReportError(
+                    Resources.ServerStoppedMsg, Resources.ServerConnErrorCaption);
+            }
+
+            HubConnection.Dispose();
+            HubConnection = null;
         }
         private async void StopReceivingButton_Click(object sender, RoutedEventArgs e)
         {
             var clientParam = new JObject();
             clientParam["ID"] = User.ID;
             clientParam["BroadcasterID"] = BroadcasterID;
-
 
             try
             {
@@ -173,47 +249,37 @@ namespace ScreenBroadcaster.Client.Controllers
             }
             catch (InvalidOperationException)
             {
-                string text = "Unable to execute the command. Possibly, the server was stopped.";
-                string caption = "Server connection error!";
-                MessageBox.Show(text, caption);
+                MsgReporter.Instance.ReportError(
+                    Resources.ServerStoppedMsg, Resources.ServerConnErrorCaption);
             }
 
-            HubConnection.Stop();
             HubConnection.Dispose();
+            HubConnection = null;
         }
-        private async void StopBroadcastingButton_Click(object sender, RoutedEventArgs e)
+        
+        private async void ButtonSend_Click(object sender, RoutedEventArgs e)
         {
             var clientParam = new JObject();
-            clientParam["BroadcasterID"] = User.ID;
+            clientParam["ID"] = User.ID;
+            clientParam["Name"] = User.Name;
+            clientParam["Message"] = MainWindow.MessageTextBox.Text;
+            clientParam["BroadcasterID"] = (BroadcasterID == null) ? Guid.Empty : BroadcasterID;
 
-            try
-            {
-                await CommandsHubProxy.Invoke(
-                    "ExecuteCommand", ClientToServerGeneralCommand.StopBroadcasting, clientParam);
-            }
-            catch (HttpRequestException)
-            {
-                reportHttpRequestException();
-            }
-            catch (InvalidOperationException)
-            {
-                string text = "Unable to execute the command. Possibly, the server was stopped.";
-                string caption = "Server connection error!";
-                MessageBox.Show(text, caption);
-            }
+            await CommandsHubProxy.Invoke(
+                "ExecuteCommand", ClientToServerGeneralCommand.SendMessage, clientParam);
 
-            HubConnection.Stop();
-            HubConnection.Dispose();
+            MainWindow.MessageTextBox.Text = String.Empty;
+            MainWindow.MessageTextBox.Focus();
         }
 
         private void UserNameTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
-            User.Name = _clientMainWindow.UserNameTextBox.Text;
+            User.Name = MainWindow.UserNameTextBox.Text;
         }
         private void BroadcasterIdTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
-            Guid broadcasterID = default(Guid);            
-            if (Guid.TryParse(_clientMainWindow.BroadcasterIdTextBox.Text, out broadcasterID))
+            Guid broadcasterID = default(Guid);
+            if (Guid.TryParse(MainWindow.BroadcasterIdTextBox.Text, out broadcasterID))
             {
                 BroadcasterID = broadcasterID;
             }
@@ -238,11 +304,11 @@ namespace ScreenBroadcaster.Client.Controllers
             }
             catch (HttpRequestException)
             {
+                HubConnection = null;
                 reportHttpRequestException();
                 return false;
             }
 
-            //Show chat UI; hide login UI.
             return true;
         }
 
@@ -269,10 +335,8 @@ namespace ScreenBroadcaster.Client.Controllers
             }
             else
             {
-                string text = "You must specify user name.";
-                string caption = "User name error!";
-                MessageBox.Show(text, caption);
-                
+                MsgReporter.Instance.ReportError(
+                    Resources.UserNameErrorMsg, Resources.UserNameErrorCaption);
                 return false;
             }
         }
@@ -284,48 +348,44 @@ namespace ScreenBroadcaster.Client.Controllers
             }
             else
             {
-                string text = "You must specify broadcaster ID.";
-                string caption = "Broadcaster ID error!";
-                MessageBox.Show(text, caption);
-
+                MsgReporter.Instance.ReportError(
+                    Resources.BcasterIdErrorMsg, Resources.BcasterIdErrorCaption);
                 return false;
             }
         }
 
         private void reportHttpRequestException()
         {
-            string text = "Unable to connect to server: Start server before connecting clients.";
-            string caption = "Server connection error!";
-            MessageBox.Show(text, caption);
+            MsgReporter.Instance.ReportError(
+                Resources.HttpRequestExcMsg, Resources.ServerConnErrorCaption);
         }
 
         private void activateSignInUI(bool shouldActivate)
         {
             if (shouldActivate)
             {
-                _clientMainWindow.SignInUI.Visibility = Visibility.Visible;
-                _clientMainWindow.UserNameTextBox.IsReadOnly = false;
+                MainWindow.SignInUI.Visibility = Visibility.Visible;
+                MainWindow.UserNameTextBox.IsReadOnly = false;
             }
             else
             {
-                _clientMainWindow.SignInUI.Visibility = Visibility.Collapsed;
-                _clientMainWindow.UserNameTextBox.IsReadOnly = true;
+                MainWindow.SignInUI.Visibility = Visibility.Collapsed;
+                MainWindow.UserNameTextBox.IsReadOnly = true;
             }
         }
         private void activateBroadcastUI(bool shouldActivate)
         {
             if (shouldActivate)
             {
-                _clientMainWindow.BroadcastUI.Visibility = Visibility.Visible;
-                _clientMainWindow.UserIDTextBox.Text = User.ID.ToString();
-                
-                _clientMainWindow.LogRichTextBox.Document.Blocks.Clear();
-                _clientMainWindow.ChatRichTextBox.Document.Blocks.Clear();
+                MainWindow.BroadcastUI.Visibility = Visibility.Visible;
+                MainWindow.UserIDTextBox.Text = User.ID.ToString();
+
+                MainWindow.LogRichTextBox.Document.Blocks.Clear();
             }
             else
             {
-                _clientMainWindow.BroadcastUI.Visibility = Visibility.Collapsed;
-                _clientMainWindow.UserIDTextBox.Text = string.Empty;
+                MainWindow.BroadcastUI.Visibility = Visibility.Collapsed;
+                MainWindow.UserIDTextBox.Text = string.Empty;
             }
 
             activateChatUI(shouldActivate);
@@ -334,15 +394,15 @@ namespace ScreenBroadcaster.Client.Controllers
         {
             if (shouldActivate)
             {
-                _clientMainWindow.ReceiveUI.Visibility = Visibility.Visible;
-                _clientMainWindow.UserIDTextBox.Text = User.ID.ToString();
-                _clientMainWindow.BroadcasterIDForReceiverTextBox.Text = BroadcasterID.Value.ToString();
+                MainWindow.ReceiveUI.Visibility = Visibility.Visible;
+                MainWindow.UserIDTextBox.Text = User.ID.ToString();
+                MainWindow.BroadcasterIDForReceiverTextBox.Text = BroadcasterID.Value.ToString();
             }
             else
             {
-                _clientMainWindow.ReceiveUI.Visibility = Visibility.Collapsed;
-                _clientMainWindow.UserIDTextBox.Text = string.Empty;
-                _clientMainWindow.BroadcasterIDForReceiverTextBox.Text = null;
+                MainWindow.ReceiveUI.Visibility = Visibility.Collapsed;
+                MainWindow.UserIDTextBox.Text = string.Empty;
+                MainWindow.BroadcasterIDForReceiverTextBox.Text = null;
             }
 
             activateChatUI(shouldActivate);
@@ -351,26 +411,19 @@ namespace ScreenBroadcaster.Client.Controllers
         {
             if (shouldActivate)
             {
-                _clientMainWindow.ChatUI.Visibility = Visibility.Visible;
+                MainWindow.ChatUI.Visibility = Visibility.Visible;
+                MainWindow.ChatRichTextBox.Document.Blocks.Clear();
             }
             else
             {
-                _clientMainWindow.ChatUI.Visibility = Visibility.Collapsed;
+                MainWindow.ChatUI.Visibility = Visibility.Collapsed;
             }
         }
-        private async void ButtonSend_Click(object sender, RoutedEventArgs e)
+        
+        private void enableBcastRecButtons(bool shouldEnable)
         {
-            var clientParam = new JObject();
-                clientParam["ID"] = User.ID;
-                clientParam["Name"] = User.Name;
-                clientParam["Message"] = _clientMainWindow.MessageTextBox.Text;
-                clientParam["BroadcasterID"] = (BroadcasterID == null)? Guid.Empty: BroadcasterID ;
-  
-            
-            await CommandsHubProxy.Invoke(
-                "ExecuteCommand", ClientToServerGeneralCommand.SendMessage, clientParam);
-           _clientMainWindow.MessageTextBox.Text = String.Empty;
-           _clientMainWindow.MessageTextBox.Focus();
+            MainWindow.BroadcastButton.IsEnabled = shouldEnable;
+            MainWindow.ReceiveButton.IsEnabled = shouldEnable;
         }
     }
 }

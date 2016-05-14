@@ -59,5 +59,167 @@ namespace ScreenBroadcaster.Client.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specified broadcaster does not exist anymore..
+        /// </summary>
+        internal static string BcasterDoesNotExistMsg {
+            get {
+                return ResourceManager.GetString("BcasterDoesNotExistMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Broadcaster ID error!.
+        /// </summary>
+        internal static string BcasterIdErrorCaption {
+            get {
+                return ResourceManager.GetString("BcasterIdErrorCaption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You must specify broadcaster ID..
+        /// </summary>
+        internal static string BcasterIdErrorMsg {
+            get {
+                return ResourceManager.GetString("BcasterIdErrorMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Broadcasting stop failed..
+        /// </summary>
+        internal static string BcastingStopFailedMsg {
+            get {
+                return ResourceManager.GetString("BcastingStopFailedMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Broadcasting has been successfully stopped..
+        /// </summary>
+        internal static string BcastingStopOkMsg {
+            get {
+                return ResourceManager.GetString("BcastingStopOkMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}: {1}.
+        /// </summary>
+        internal static string ChatMsgFormat {
+            get {
+                return ResourceManager.GetString("ChatMsgFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Command execution error!.
+        /// </summary>
+        internal static string CommandExecErrorCaption {
+            get {
+                return ResourceManager.GetString("CommandExecErrorCaption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UserName.
+        /// </summary>
+        internal static string DefaultUserName {
+            get {
+                return ResourceManager.GetString("DefaultUserName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to connect to server: Start server before connecting clients..
+        /// </summary>
+        internal static string HttpRequestExcMsg {
+            get {
+                return ResourceManager.GetString("HttpRequestExcMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Operation failed due to server connection issues..
+        /// </summary>
+        internal static string OperationFailedMsg {
+            get {
+                return ResourceManager.GetString("OperationFailedMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User {0} ({1}) {2} your broadcast..
+        /// </summary>
+        internal static string ReceiverStateChangedMsgFormat {
+            get {
+                return ResourceManager.GetString("ReceiverStateChangedMsgFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Receiving has been successfully stopped..
+        /// </summary>
+        internal static string ReceivingStopOkMsg {
+            get {
+                return ResourceManager.GetString("ReceivingStopOkMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server connection error!.
+        /// </summary>
+        internal static string ServerConnErrorCaption {
+            get {
+                return ResourceManager.GetString("ServerConnErrorCaption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to execute the command. Possibly, the server was stopped..
+        /// </summary>
+        internal static string ServerStoppedMsg {
+            get {
+                return ResourceManager.GetString("ServerStoppedMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Stop Broadcasting.
+        /// </summary>
+        internal static string StopBcastingCaption {
+            get {
+                return ResourceManager.GetString("StopBcastingCaption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Stop Receiving.
+        /// </summary>
+        internal static string StopReceivingCaption {
+            get {
+                return ResourceManager.GetString("StopReceivingCaption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User name error!.
+        /// </summary>
+        internal static string UserNameErrorCaption {
+            get {
+                return ResourceManager.GetString("UserNameErrorCaption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You must specify user name..
+        /// </summary>
+        internal static string UserNameErrorMsg {
+            get {
+                return ResourceManager.GetString("UserNameErrorMsg", resourceCulture);
+            }
+        }
     }
 }

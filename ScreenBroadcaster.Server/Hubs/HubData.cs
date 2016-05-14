@@ -9,7 +9,7 @@ using ScreenBroadcaster.Common;
 namespace ScreenBroadcaster.Server.Hubs
 {
     // визначає дані про транслятора і його слухачів для хабів.
-    internal class HubData
+    public class HubData
     {
         // Singleton.
         public static HubData Instance { get; private set; }

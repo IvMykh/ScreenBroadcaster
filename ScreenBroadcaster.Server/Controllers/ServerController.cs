@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Owin.Hosting;
 
 using ScreenBroadcaster.Common;
+using ScreenBroadcaster.Server.Properties;
 
 namespace ScreenBroadcaster.Server.Controllers
 {
@@ -16,19 +17,13 @@ namespace ScreenBroadcaster.Server.Controllers
         const string                    SERVER_URI = "http://localhost:8080";
 
         // Instanse members.
-        public IDisposable              SignalR                         { get; private set; }
-        public ServerMainWindow         ServerMainWindow                { get; private set; }
+        public IDisposable      SignalR             { get; private set; }
+        public ServerMainWindow ServerMainWindow    { get; private set; }
 
         public ServerController(ServerMainWindow serverMainWindow)
         {
             ServerMainWindow = serverMainWindow;
             setServerMainWindowEventsHandlers();
-        }
-
-        private void setServerMainWindowEventsHandlers()
-        {
-            ServerMainWindow.StartButton.Click += StartButton_Click;
-            ServerMainWindow.StopButton.Click += StopButton_Click;
         }
 
         public void WriteToConsole(String message)
@@ -41,10 +36,15 @@ namespace ScreenBroadcaster.Server.Controllers
                 return;
             }
 
-            ServerMainWindow.ConsoleRichTextBox.AppendText(message + "\r");
+            ServerMainWindow.ConsoleRichTextBox.AppendText(message + '\r');
         }
 
-        private void StartServer()
+        private void setServerMainWindowEventsHandlers()
+        {
+            ServerMainWindow.StartButton.Click += StartButton_Click;
+            ServerMainWindow.StopButton.Click += StopButton_Click;
+        }
+        private void startServer()
         {
             try
             {
@@ -52,26 +52,26 @@ namespace ScreenBroadcaster.Server.Controllers
             }
             catch (TargetInvocationException)
             {
-                WriteToConsole("A server is already running at " + SERVER_URI);
+                WriteToConsole(string.Format(Resources.ServerAlreadyRunningMsgFormat, SERVER_URI));
                 ServerMainWindow.Dispatcher.Invoke(() => ServerMainWindow.StartButton.IsEnabled = true);
                 return;
             }
 
             ServerMainWindow.Dispatcher.Invoke(() => ServerMainWindow.StopButton.IsEnabled = true);
-            WriteToConsole("Server started at " + SERVER_URI);
+            WriteToConsole(string.Format(Resources.ServerStartedAtMsgFormat, SERVER_URI));
         }
 
 
         // Events handlers.
         void StartButton_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            WriteToConsole("Starting server...");
+            WriteToConsole(Resources.StartingServerMsg);
             ServerMainWindow.StartButton.IsEnabled = false;
-            Task.Run(() => StartServer());
+            Task.Run(() => startServer());
         }
-
         void StopButton_Click(object sender, System.Windows.RoutedEventArgs e)
         {
+            WriteToConsole(Resources.StartingServerMsg);
             SignalR.Dispose();
             ServerMainWindow.Close();
         }

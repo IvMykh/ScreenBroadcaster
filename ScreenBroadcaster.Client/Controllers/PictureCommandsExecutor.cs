@@ -13,7 +13,7 @@ using ScreenBroadcaster.Common.CommandTypes;
 namespace ScreenBroadcaster.Client.Controllers
 {
     public class PictureCommandsExecutor
-        : CommandsExecutor<ServerToClientPictureCommand>
+        : AbstrCommandsExecutor<ServerToClientPictureCommand>
     {
         public List<string>     PicFrags        { get; private set; }
 
@@ -30,7 +30,6 @@ namespace ScreenBroadcaster.Client.Controllers
         }
 
         // Concrete commands handlers.
-
         private void receiveNewPicture(JObject serverParam)
         {
             var nextPicFrag = (string)serverParam.SelectToken("nextPicFrag");

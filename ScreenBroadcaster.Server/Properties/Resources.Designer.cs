@@ -59,5 +59,95 @@ namespace ScreenBroadcaster.Server.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specified Broadcaster does not exist..
+        /// </summary>
+        internal static string BcasterDoesNotExistMsg {
+            get {
+                return ResourceManager.GetString("BcasterDoesNotExistMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have been successfully registered as a Broadcaster..
+        /// </summary>
+        internal static string BcasterRegistrationOkMsg {
+            get {
+                return ResourceManager.GetString("BcasterRegistrationOkMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client connected: {0}.
+        /// </summary>
+        internal static string ClientConnectedMsgFormat {
+            get {
+                return ResourceManager.GetString("ClientConnectedMsgFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client disconnected: {0}.
+        /// </summary>
+        internal static string ClientDisconnectedMsgFormat {
+            get {
+                return ResourceManager.GetString("ClientDisconnectedMsgFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You have been successfully registered as a Receiver.
+        /// </summary>
+        internal static string ReceiverRegistrationOkMsg {
+            get {
+                return ResourceManager.GetString("ReceiverRegistrationOkMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Registration failed!.
+        /// </summary>
+        internal static string RegistrationFailedCaption {
+            get {
+                return ResourceManager.GetString("RegistrationFailedCaption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Registration succeeded!.
+        /// </summary>
+        internal static string RegistrationOkCaption {
+            get {
+                return ResourceManager.GetString("RegistrationOkCaption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A server is already running at {0}..
+        /// </summary>
+        internal static string ServerAlreadyRunningMsgFormat {
+            get {
+                return ResourceManager.GetString("ServerAlreadyRunningMsgFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server successfully started at {0}..
+        /// </summary>
+        internal static string ServerStartedAtMsgFormat {
+            get {
+                return ResourceManager.GetString("ServerStartedAtMsgFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Starting server....
+        /// </summary>
+        internal static string StartingServerMsg {
+            get {
+                return ResourceManager.GetString("StartingServerMsg", resourceCulture);
+            }
+        }
     }
 }

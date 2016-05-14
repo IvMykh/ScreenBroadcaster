@@ -1,16 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls.Primitives;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
-using ScreenBroadcaster.Client.ScreenCapturing;
+using ScreenBroadcaster.Client.Properties;
 using ScreenBroadcaster.Common;
 using ScreenBroadcaster.Common.CommandTypes;
 
@@ -19,17 +10,21 @@ namespace ScreenBroadcaster.Client.Controllers
     public partial class ClientController
     {
         public partial class GeneralCommandsExecutor
-            : CommandsExecutor<ServerToClientGeneralCommand>
+            : AbstrCommandsExecutor<ServerToClientGeneralCommand>
         {
             private PictureSender   _pictureSender;
-            
 
             public GeneralCommandsExecutor(ClientController clientController)
                 : base(clientController)
             {
                 setupHandlers();
 
-                _pictureSender = new PictureSender(100, clientController);
+                _pictureSender = new PictureSender(160, clientController);
+            }
+
+            public void StopBroadcast()
+            {
+                _pictureSender.Stop();
             }
 
             protected override void setupHandlers()
@@ -48,41 +43,34 @@ namespace ScreenBroadcaster.Client.Controllers
             
             private void reportSuccessfulRegistration(JObject serverParam)
             {
-                var text = (string)serverParam.SelectToken("message");
+                var msg = (string)serverParam.SelectToken("message");
                 var caption = (string)serverParam.SelectToken("caption");
                 var userType = (string)serverParam.SelectToken("userType");
 
-                MessageBox.Show(text, caption, MessageBoxButton.OK, MessageBoxImage.None);
+                MsgReporter.Instance.ReportInfo(msg, caption);
 
                 ClientController.IsRegistered = true;
-
-                if (String.CompareOrdinal(userType, "Receiver") == 0)
-                {
-                    // Request for first picture fragment.
-                    var clientParam = new JObject();
-                    clientParam["broadcasterID"] = ClientController.BroadcasterID;
-                    clientParam["receiverID"] = ClientController.User.ID;
-                }
             }
             private void reportFailedRegistration(JObject serverParam)
             {
-                var text = (string)serverParam.SelectToken("message");
+                var msg = (string)serverParam.SelectToken("message");
                 var caption = (string)serverParam.SelectToken("caption");
 
-                MessageBox.Show(text, caption, MessageBoxButton.OK, MessageBoxImage.Error);
+                MsgReporter.Instance.ReportError(msg, caption);
 
                 ClientController.IsRegistered = false;
             }
+            
             private void notifyReceiverStateChange(JObject serverParam)
             {
                 var recName = (string)serverParam.SelectToken("receiverName");
-                var recId = (Guid)serverParam.SelectToken("receiverID");
-                var state = (string)serverParam.SelectToken("state");
+                var recId   = (Guid)serverParam.SelectToken("receiverID");
+                var state   = (string)serverParam.SelectToken("state");
 
                 ClientController.MainWindow.Dispatcher.Invoke(() =>
                     {
                         ClientController.MainWindow.LogRichTextBox.AppendText(
-                            string.Format("User {0} ({1}) {2} your broadcast.\n", recName, recId, state));
+                            string.Format(Resources.ReceiverStateChangedMsgFormat + '\r', recName, recId, state));
                     });
 
                 var specialState = (BroadcastSpecialState)Enum.Parse(
@@ -108,53 +96,54 @@ namespace ScreenBroadcaster.Client.Controllers
                         } break;
                 }
             }
+            
             private void notifyStopReceiving(JObject serverParam)
             {
                 var isSuccess = (bool)serverParam.SelectToken("isSuccess");
-                var text = "";
-                var caption = "Stop Receiving";
 
                 if (isSuccess)
                 {
-                    text = "Receiving has been successfully stopped.";
+                    MsgReporter.Instance.ReportInfo(
+                        Resources.ReceivingStopOkMsg, Resources.StopReceivingCaption);
                 }
                 else
                 {
-                    text = "Specified broadcaster does not exist anymore.";
+                    MsgReporter.Instance.ReportWarning(
+                        Resources.BcasterDoesNotExistMsg, Resources.StopReceivingCaption);
                 }
-
-                MessageBox.Show(text, caption);
             }
             private void notifyStopBroadcasting(JObject serverParam)
             {
                 var isSuccess = (bool)serverParam.SelectToken("isSuccess");
-                var text = "";
-                var caption = "Stop Broadcasting";
 
                 if (isSuccess)
                 {
-                    text = "Broadcasting has been successfully stopped.";
+                    MsgReporter.Instance.ReportInfo(
+                        Resources.BcastingStopOkMsg, Resources.StopBcastingCaption);
                 }
                 else
                 {
-                    text = "Error: broadcasting stop failed.";
+                    MsgReporter.Instance.ReportError(
+                        Resources.BcastingStopFailedMsg, Resources.StopBcastingCaption);
                 }
-
-                MessageBox.Show(text, caption);
             }
+            
             private void forceStopReceiving(JObject serverParam)
             {
                 ClientController.StopReceivingButton_Click(null, null);
             }
+            
             private void sendMessage(JObject serverParam)
             {
                 var text = (string)serverParam.SelectToken("Message");
                 var name = (string)serverParam.SelectToken("Name");
+
                 ClientController.MainWindow.Dispatcher.Invoke(() =>
-                {
-                    ClientController.MainWindow.ChatRichTextBox.AppendText(
-                        String.Format("{0}: {1}\r",name, text));         
-                });
+                    {
+                        ClientController.MainWindow.ChatRichTextBox.AppendText(
+                            String.Format(Resources.ChatMsgFormat, name, text + '\r'));
+                    }
+                );
             }
         }
     }

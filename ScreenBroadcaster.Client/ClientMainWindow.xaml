@@ -147,7 +147,7 @@
                         HorizontalAlignment="Right" VerticalAlignment="Bottom"
                         Margin="0,0,10,10"
                         Width="75" Height="20"
-                        Content="Send" Click="sendMessageButton_Click">
+                        Content="Send">
                 </Button>
             </Grid>
         </Grid>

@@ -8,16 +8,15 @@ using ScreenBroadcaster.Common.CommandTypes;
 
 namespace ScreenBroadcaster.Client.Controllers
 {
-    public abstract class CommandsExecutor<CommandType>
+    public abstract class AbstrCommandsExecutor<CommandType>
         where CommandType : struct, IConvertible
     {
         protected IDictionary<
-                CommandType,
-                Action<JObject>> Handlers { get; private set; }
+                CommandType, Action<JObject>> Handlers { get; private set; }
 
         protected ClientController ClientController { get; private set; }
 
-        public CommandsExecutor(ClientController clientController)
+        public AbstrCommandsExecutor(ClientController clientController)
         {
             ClientController = clientController;
             Handlers = new Dictionary<CommandType, Action<JObject>>();

@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using ScreenBroadcaster.Client.Properties;
 using ScreenBroadcaster.Client.ScreenCapturing;
+using ScreenBroadcaster.Common;
 using ScreenBroadcaster.Common.CommandTypes;
 
 namespace ScreenBroadcaster.Client.Controllers
@@ -16,7 +14,7 @@ namespace ScreenBroadcaster.Client.Controllers
             : IDisposable
         {
             // Instance members.
-            private int             _counter;
+            //private int             _counter;
             private Timer           _timer;
 
             public ClientController ClientController    { get; private set; }
@@ -29,7 +27,7 @@ namespace ScreenBroadcaster.Client.Controllers
             public PictureSender(int generationFrequency, ClientController controller)
             {
                 _timer              = null;
-                _counter            = 0;
+                //_counter            = 0;
 
                 ClientController    = controller;
                 ScreenCapturer      = new ScreenCapturer();
@@ -61,7 +59,7 @@ namespace ScreenBroadcaster.Client.Controllers
                 }
             }
 
-            public bool sendNextPicture()
+            private void sendNextPicture()
             {
                 if (CurrFragment == 0)
                 {
@@ -82,10 +80,18 @@ namespace ScreenBroadcaster.Client.Controllers
 
                 clientParam["isLast"] = isLast;
 
-                ClientController.PicturesHubProxy
-                    .Invoke("ExecuteCommand", ClientToServerPictureCommand.SendNewPicture, clientParam);
+                try
+                {
+                    ClientController.PicturesHubProxy
+                        .Invoke("ExecuteCommand", ClientToServerPictureCommand.SendNewPicture, clientParam);
+                }
+                catch (InvalidOperationException ioe)
+                {
+                    MsgReporter.Instance.ReportError(
+                        ioe.Message, Resources.CommandExecErrorCaption);
+                }
 
-                return true;
+                //return true;
             }
 
             public void Dispose()
@@ -94,6 +100,7 @@ namespace ScreenBroadcaster.Client.Controllers
                 {
                     Stop();
                 }
+                IsDisposed = true;
             }
         }
     }
