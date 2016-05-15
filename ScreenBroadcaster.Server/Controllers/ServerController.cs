@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Owin.Hosting;
-
 using ScreenBroadcaster.Common;
 using ScreenBroadcaster.Server.Properties;
 
@@ -13,15 +13,15 @@ namespace ScreenBroadcaster.Server.Controllers
 {
     public class ServerController
     {
-        // Constants.
-        const string SERVER_URI = "http://localhost:51000";
 
         // Instanse members.
+        public string           ServerUri           { get; private set; }
         public IDisposable      SignalR             { get; private set; }
         public ServerMainWindow ServerMainWindow    { get; private set; }
 
         public ServerController(ServerMainWindow serverMainWindow)
         {
+            ServerUri = ConfigurationManager.AppSettings["ServerUri"];
             ServerMainWindow = serverMainWindow;
             setServerMainWindowEventsHandlers();
         }
@@ -48,17 +48,17 @@ namespace ScreenBroadcaster.Server.Controllers
         {
             try
             {
-                SignalR = WebApp.Start(SERVER_URI);
+                SignalR = WebApp.Start(ServerUri);
             }
             catch (TargetInvocationException)
             {
-                WriteToConsole(string.Format(Resources.ServerAlreadyRunningMsgFormat, SERVER_URI));
+                WriteToConsole(string.Format(Resources.ServerAlreadyRunningMsgFormat, ServerUri));
                 ServerMainWindow.Dispatcher.Invoke(() => ServerMainWindow.StartButton.IsEnabled = true);
                 return;
             }
 
             ServerMainWindow.Dispatcher.Invoke(() => ServerMainWindow.StopButton.IsEnabled = true);
-            WriteToConsole(string.Format(Resources.ServerStartedAtMsgFormat, SERVER_URI));
+            WriteToConsole(string.Format(Resources.ServerStartedAtMsgFormat, ServerUri));
         }
 
 
