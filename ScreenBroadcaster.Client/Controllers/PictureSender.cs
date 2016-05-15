@@ -65,14 +65,14 @@ namespace ScreenBroadcaster.Client.Controllers
             }
 
             private void sendNextPicture()
-            {
+            { 
                 if (CurrFragment == 0)
                 {
                     if (ClientController.GetFullImage == true)
                     {
                         ScreenCapturer.CaptureScreen();
+                        ClientController.FullImage = ScreenCapturer.Screenshot;
                         ClientController.GetFullImage = false;
-                        ClientController.FullImage = (Bitmap)ScreenCapturer.Screenshot;
                     }
                     else
                     {

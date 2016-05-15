@@ -29,7 +29,7 @@ namespace ScreenBroadcaster.Client.Controllers.Helpers
             CharsInBlock = picBlockSizeInKb / 2;
         }
 
-        public Image    Screenshot                  { get; private set; }
+        public Bitmap    Screenshot                  { get; private set; }
         public string[] ScreenshotAsBase64Strings   { get; private set; }
 
         ~ScreenCapturer()
@@ -82,10 +82,8 @@ namespace ScreenBroadcaster.Client.Controllers.Helpers
                 graphics.CopyFromScreen(sourceUpLeftPoint, destUpLeftPoint, Screenshot.Size, CopyPixelOperation.SourceCopy);
             }
 
-            Bitmap localImg = (Bitmap)Screenshot;
-
-            getBonds(baseimage, localImg);
-            Screenshot = CropImage(localImg);
+            getBonds(baseimage, Screenshot);
+            Screenshot = CropImage(Screenshot);
 
             ScreenshotAsBase64Strings = getScreenshotAsBase64Strings();
         }
