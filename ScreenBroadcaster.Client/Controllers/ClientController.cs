@@ -48,6 +48,15 @@ namespace ScreenBroadcaster.Client.Controllers
             BroadcasterID       = null;
 
             GetFullImage        = true;
+            FullImage           = new Bitmap((int)SystemParameters.PrimaryScreenWidth,
+                                             (int)SystemParameters.PrimaryScreenHeight);
+
+            using (var graphics = Graphics.FromImage(FullImage))
+            {
+                var sourceUpLeftPoint = new System.Drawing.Point(0, 0);
+                var destUpLeftPoint = new System.Drawing.Point(0, 0);
+                graphics.CopyFromScreen(sourceUpLeftPoint, destUpLeftPoint, FullImage.Size, CopyPixelOperation.SourceCopy);
+            }
 
             GenCommandsExecutor = new GeneralCommandsExecutor(this);
             PicCommandsExecutor = new PictureCommandsExecutor(this);
