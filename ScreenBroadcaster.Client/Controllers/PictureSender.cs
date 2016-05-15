@@ -71,7 +71,7 @@ namespace ScreenBroadcaster.Client.Controllers
                     if (ClientController.GetFullImage == true)
                     {
                         ScreenCapturer.CaptureScreen();
-                        ClientController.FullImage = ScreenCapturer.Screenshot;
+                        //ClientController.FullImage = ScreenCapturer.Screenshot;
                         ClientController.GetFullImage = false;
                     }
                     else

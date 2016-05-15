@@ -82,8 +82,10 @@ namespace ScreenBroadcaster.Client.Controllers.Helpers
                 graphics.CopyFromScreen(sourceUpLeftPoint, destUpLeftPoint, Screenshot.Size, CopyPixelOperation.SourceCopy);
             }
 
-            getBonds(baseimage, Screenshot);
-            Screenshot = CropImage(Screenshot);
+            Bitmap baseimage_ = new Bitmap(baseimage);
+            Bitmap localimage = new Bitmap(Screenshot);
+            getBonds(baseimage_, localimage);
+            Screenshot = CropImage(localimage);
 
             ScreenshotAsBase64Strings = getScreenshotAsBase64Strings();
         }
@@ -95,9 +97,9 @@ namespace ScreenBroadcaster.Client.Controllers.Helpers
             PieceStartX = currimg.Width;
             int right = 0;
 
-            for (int i = 0; i < Screenshot.Height; ++i)
+            for (int i = 0; i < currimg.Height; ++i)
             {
-                for (int j = 0; j < Screenshot.Width; ++j)
+                for (int j = 0; j < currimg.Width; ++j)
                 {
                     if (baseimage.GetPixel(j, i) != currimg.GetPixel(j, i))
                     {
