@@ -5,6 +5,7 @@ using ScreenBroadcaster.Client.Controllers.Helpers;
 using ScreenBroadcaster.Client.Properties;
 using ScreenBroadcaster.Common;
 using ScreenBroadcaster.Common.CommandTypes;
+using System.Drawing;
 
 namespace ScreenBroadcaster.Client.Controllers
 {
@@ -67,13 +68,26 @@ namespace ScreenBroadcaster.Client.Controllers
             {
                 if (CurrFragment == 0)
                 {
-                    ScreenCapturer.CaptureScreen();
+                    if (ClientController.GetFullImage == true)
+                    {
+                        ScreenCapturer.CaptureScreen();
+                        ClientController.GetFullImage = false;
+                        ClientController.FullImage = (Bitmap)ScreenCapturer.Screenshot;
+                    }
+                    else
+                    {
+                        ScreenCapturer.CapturePart(ClientController.FullImage);
+                    }
                 }
 
                 var clientParam = new JObject();
                 clientParam["broadcaserID"] = ClientController.User.ID;
                 clientParam["nextPicFrag"] = ScreenCapturer.ScreenshotAsBase64Strings[CurrFragment];
                 clientParam["fragNumber"] = CurrFragment;
+                clientParam["pieceStartX"] = ScreenCapturer.PieceStartX;
+                clientParam["pieceStartY"] = ScreenCapturer.PieceStartY;
+                clientParam["pieceWidth"] = ScreenCapturer.PieceWidth;
+                clientParam["pieceHeight"] = ScreenCapturer.PieceHeight;
 
                 bool isLast = (CurrFragment == ScreenCapturer.ScreenshotAsBase64Strings.Length - 1) ? true : false;
 

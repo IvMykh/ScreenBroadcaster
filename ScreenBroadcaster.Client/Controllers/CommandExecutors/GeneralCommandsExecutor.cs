@@ -64,6 +64,7 @@ namespace ScreenBroadcaster.Client.Controllers
             
             private void notifyReceiverStateChange(JObject serverParam)
             {
+                ClientController.GetFullImage = true;
                 var recName = (string)serverParam.SelectToken("receiverName");
                 var recId   = (Guid)serverParam.SelectToken("receiverID");
                 var state   = (string)serverParam.SelectToken("state");

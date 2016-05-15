@@ -9,6 +9,7 @@ using ScreenBroadcaster.Client.Controllers.Helpers;
 using ScreenBroadcaster.Client.Properties;
 using ScreenBroadcaster.Common;
 using ScreenBroadcaster.Common.CommandTypes;
+using System.Drawing;
 
 namespace ScreenBroadcaster.Client.Controllers
 {
@@ -32,6 +33,10 @@ namespace ScreenBroadcaster.Client.Controllers
         public IHubProxy                CommandsHubProxy    { get; private set; }
         public IHubProxy                PicturesHubProxy    { get; private set; }
 
+        public bool                     GetFullImage        { get; set; }
+        public Bitmap                   FullImage           { get; set; }
+
+
         public ClientController(ClientMainWindow clientMainWindow)
         {
             MainWindow = clientMainWindow;
@@ -41,7 +46,9 @@ namespace ScreenBroadcaster.Client.Controllers
             User                = new User();
             IsRegistered        = false;
             BroadcasterID       = null;
-            
+
+            GetFullImage        = true;
+
             GenCommandsExecutor = new GeneralCommandsExecutor(this);
             PicCommandsExecutor = new PictureCommandsExecutor(this);
 
@@ -172,6 +179,7 @@ namespace ScreenBroadcaster.Client.Controllers
             clientParam["Name"] = User.Name;
             clientParam["Message"] = MainWindow.MessageTextBox.Text;
             clientParam["BroadcasterID"] = (BroadcasterID == null) ? Guid.Empty : BroadcasterID;
+
 
             await executeSafe(ClientToServerGeneralCommand.SendMessage, clientParam);
 

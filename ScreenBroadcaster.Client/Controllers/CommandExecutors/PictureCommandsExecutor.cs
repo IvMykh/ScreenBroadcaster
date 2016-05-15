@@ -7,6 +7,7 @@ using System.Windows.Media.Imaging;
 using Newtonsoft.Json.Linq;
 using ScreenBroadcaster.Client.Controllers.Helpers;
 using ScreenBroadcaster.Common.CommandTypes;
+using System.Drawing;
 
 namespace ScreenBroadcaster.Client.Controllers
 {
@@ -33,6 +34,10 @@ namespace ScreenBroadcaster.Client.Controllers
             var nextPicFrag = (string)serverParam.SelectToken("nextPicFrag");
             var isLast = (bool)serverParam.SelectToken("isLast");
             var fragNumber = (int)serverParam.SelectToken("fragNumber");
+            var pieceStartX = (int)serverParam.SelectToken("pieceStartX");
+            var pieceStartY = (int)serverParam.SelectToken("pieceStartY");
+            var pieceWidth = (int)serverParam.SelectToken("pieceWidth");
+            var pieceHeight = (int)serverParam.SelectToken("pieceHeight");
 
             if (fragNumber == PicFrags.Count)
             {
@@ -53,13 +58,30 @@ namespace ScreenBroadcaster.Client.Controllers
                     using (var memoryStream = new MemoryStream(pictureData))
                     {
                         memoryStream.Position = 0;
-                        BitmapImage bitmapImage = new BitmapImage();
-                        bitmapImage.BeginInit();
-                        bitmapImage.StreamSource = memoryStream;
-                        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                        bitmapImage.EndInit();
+                        
+                        //bitmapImage.BeginInit();
+                        //bitmapImage.StreamSource = memoryStream;
+                        //bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                        //bitmapImage.EndInit();
 
-                        var brush = new ImageBrush(bitmapImage);
+                        if (ClientController.GetFullImage == true)
+                        {
+                            ClientController.FullImage = new Bitmap(memoryStream);
+                        }
+                        else
+                        {
+                            using (Graphics g = Graphics.FromImage(ClientController.FullImage))
+                            {
+                                Bitmap piece = new Bitmap(memoryStream);
+                                g.DrawImage(piece, pieceStartX, pieceStartY);
+                            }
+                        }
+
+                        System.Windows.Media.Imaging.BitmapSource bs = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                                ClientController.FullImage.GetHbitmap(), IntPtr.Zero, System.Windows.Int32Rect.Empty,
+                                BitmapSizeOptions.FromWidthAndHeight(ClientController.FullImage.Width, ClientController.FullImage.Height));
+
+                        var brush = new ImageBrush(bs);
                         ClientController.MainWindow.RemoteScreenDisplay.Background = brush;
                     }
                 });

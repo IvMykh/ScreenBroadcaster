@@ -12,11 +12,18 @@ namespace ScreenBroadcaster.Client.Controllers.Helpers
         public static int ScreenWidth   { get; private set; }
         public static int ScreenHeight  { get; private set; }
         public static int CharsInBlock  { get; private set; }
+        public static int PieceStartX   { get; private set; }
+        public static int PieceStartY   { get; private set; }
+        public static int PieceWidth    { get; private set; }
+        public static int PieceHeight   { get; private set; }
 
         static ScreenCapturer()
         {
             ScreenWidth     = (int)SystemParameters.PrimaryScreenWidth;
             ScreenHeight    = (int)SystemParameters.PrimaryScreenHeight;
+
+            PieceStartX = 0;
+            PieceStartY = 0;
 
             var picBlockSizeInKb = int.Parse(Resources.PictureBlockSizeInKb) * 1024;
             CharsInBlock = picBlockSizeInKb / 2;
@@ -51,6 +58,86 @@ namespace ScreenBroadcaster.Client.Controllers.Helpers
             }
 
             ScreenshotAsBase64Strings = getScreenshotAsBase64Strings();
+
+            PieceStartX = 0;
+            PieceStartY = 0;
+            PieceWidth = ScreenWidth;
+            PieceHeight = ScreenHeight;
+        }
+
+        public void CapturePart(Bitmap baseimage)
+        {
+            if (Screenshot != null)
+            {
+                Screenshot.Dispose();
+                Screenshot = null;
+            }
+
+            Screenshot = new Bitmap(ScreenWidth, ScreenHeight);
+
+            using (var graphics = Graphics.FromImage(Screenshot))
+            {
+                var sourceUpLeftPoint = new System.Drawing.Point(0, 0);
+                var destUpLeftPoint = new System.Drawing.Point(0, 0);
+                graphics.CopyFromScreen(sourceUpLeftPoint, destUpLeftPoint, Screenshot.Size, CopyPixelOperation.SourceCopy);
+            }
+
+            Bitmap localImg = (Bitmap)Screenshot;
+
+            getBonds(baseimage, localImg);
+            Screenshot = CropImage(localImg);
+
+            ScreenshotAsBase64Strings = getScreenshotAsBase64Strings();
+        }
+
+        private void getBonds(Bitmap baseimage, Bitmap currimg)
+        {
+            PieceStartY = currimg.Height;
+            int bottom = 0;
+            PieceStartX = currimg.Width;
+            int right = 0;
+
+            for (int i = 0; i < Screenshot.Height; ++i)
+            {
+                for (int j = 0; j < Screenshot.Width; ++j)
+                {
+                    if (baseimage.GetPixel(j, i) != currimg.GetPixel(j, i))
+                    {
+                        if (PieceStartY > i)
+                        {
+                            PieceStartY = i;
+                        }
+                        if (bottom < i)
+                        {
+                            bottom = i;
+                        }
+                        if (PieceStartX > j)
+                        {
+                            PieceStartX = j;
+                        }
+                        if (right < j)
+                        {
+                            right = j;
+                        }
+                    }
+                }
+            }
+
+            PieceWidth = right - PieceStartX;
+            PieceHeight = bottom - PieceStartY;
+        }
+
+        private Bitmap CropImage(Bitmap currimg)
+        {
+            Bitmap res = new Bitmap(PieceWidth, PieceHeight);
+            using (Graphics gr = Graphics.FromImage(res))
+            {
+                gr.DrawImage(currimg, 0, 0,
+                    new System.Drawing.Rectangle(PieceStartX, PieceStartY, PieceWidth, PieceHeight),
+                    GraphicsUnit.Pixel);
+            }
+
+            return res;
         }
 
         private ImageCodecInfo getEncoder(ImageFormat format)
