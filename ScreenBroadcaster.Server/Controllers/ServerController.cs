@@ -14,7 +14,7 @@ namespace ScreenBroadcaster.Server.Controllers
     public class ServerController
     {
         // Constants.
-        const string                    SERVER_URI = "http://localhost:8080";
+        const string                    SERVER_URI = "http://localhost:3000";
 
         // Instanse members.
         public IDisposable      SignalR             { get; private set; }
