@@ -16,7 +16,7 @@ namespace ScreenBroadcaster.Server
             // https configuration.
 
             GlobalHost.Configuration.DefaultMessageBufferSize = 5;
-
+            GlobalHost.Configuration.MaxIncomingWebSocketMessageSize = null;
             app.UseCors(CorsOptions.AllowAll);
             app.MapSignalR();
         }

@@ -14,6 +14,7 @@ namespace ScreenBroadcaster.Client.Controllers
             : IDisposable
         {
             // Instance members.
+            private object          _thisLock = new object();
             private Timer           _timer;
 
             public ClientController ClientController    { get; private set; }
@@ -67,7 +68,10 @@ namespace ScreenBroadcaster.Client.Controllers
             {
                 if (CurrFragment == 0)
                 {
-                    ScreenCapturer.CaptureScreen();
+                    lock (_thisLock)
+                    {
+                        ScreenCapturer.CaptureScreen();
+                    }
                 }
 
                 var clientParam = new JObject();

@@ -22,8 +22,26 @@ namespace ScreenBroadcaster.Client.Controllers.Helpers
             CharsInBlock = picBlockSizeInKb / 2;
         }
 
+
+
+        private object _thisLock;
+        private ImageCodecInfo _jpgEncoder;
+        private EncoderParameters _myEncoderParameters;
+
         public Image    Screenshot                  { get; private set; }
         public string[] ScreenshotAsBase64Strings   { get; private set; }
+
+        public ScreenCapturer()
+        {
+            _thisLock = new object();
+
+            _jpgEncoder = getEncoder(ImageFormat.Jpeg);
+            System.Drawing.Imaging.Encoder myEncoder = System.Drawing.Imaging.Encoder.Quality;
+            _myEncoderParameters = new EncoderParameters(1);
+
+            var myEncoderParameter = new EncoderParameter(myEncoder, 25L);
+            _myEncoderParameters.Param[0] = myEncoderParameter;
+        }
 
         ~ScreenCapturer()
         {
@@ -73,14 +91,7 @@ namespace ScreenBroadcaster.Client.Controllers.Helpers
 
             using (var stream = new MemoryStream())
             {
-                ImageCodecInfo jpgEncoder = getEncoder(ImageFormat.Jpeg);
-                System.Drawing.Imaging.Encoder myEncoder = System.Drawing.Imaging.Encoder.Quality;
-                EncoderParameters myEncoderParameters = new EncoderParameters(1);
-
-                EncoderParameter myEncoderParameter = new EncoderParameter(myEncoder, 15L);
-                myEncoderParameters.Param[0] = myEncoderParameter;
-
-                Screenshot.Save(stream, jpgEncoder, myEncoderParameters);
+                Screenshot.Save(stream, _jpgEncoder, _myEncoderParameters);
                 imageBytes = stream.ToArray();
 
                 base64Representation = Convert.ToBase64String(imageBytes);

@@ -13,6 +13,7 @@ namespace ScreenBroadcaster.Client.Controllers
     internal class PictureCommandsExecutor
         : AbstrCommandsExecutor<ServerToClientPictureCommand>
     {
+        private object          _thisLock = new object();
         public List<string>     PicFrags        { get; private set; }
 
         public PictureCommandsExecutor(ClientController clientController)
@@ -30,41 +31,44 @@ namespace ScreenBroadcaster.Client.Controllers
         // Concrete commands handlers.
         private void receiveNewPicture(JObject serverParam)
         {
-            var nextPicFrag = (string)serverParam.SelectToken("nextPicFrag");
-            var isLast = (bool)serverParam.SelectToken("isLast");
-            var fragNumber = (int)serverParam.SelectToken("fragNumber");
+                var nextPicFrag = (string)serverParam.SelectToken("nextPicFrag");
+                var isLast = (bool)serverParam.SelectToken("isLast");
+                var fragNumber = (int)serverParam.SelectToken("fragNumber");
 
-            if (fragNumber == PicFrags.Count)
-            {
-                PicFrags.Add(nextPicFrag);
-            }
-
-            if (isLast &&  PicFrags.Count > 0)
-            {
-                var strBuilder = new StringBuilder(PicFrags.Count * ScreenCapturer.CharsInBlock);
-                foreach (var frag in PicFrags)
+                if (fragNumber == PicFrags.Count)
                 {
-                    strBuilder.Append(frag);
+                    PicFrags.Add(nextPicFrag);
                 }
-                
-                ClientController.MainWindow.Dispatcher.Invoke(() =>
+
+                if (isLast && PicFrags.Count > 0)
                 {
-                    byte[] pictureData = Convert.FromBase64String(strBuilder.ToString());
-                    using (var memoryStream = new MemoryStream(pictureData))
+                    var strBuilder = new StringBuilder(PicFrags.Count * ScreenCapturer.CharsInBlock);
+                    foreach (var frag in PicFrags)
                     {
-                        memoryStream.Position = 0;
-                        BitmapImage bitmapImage = new BitmapImage();
-                        bitmapImage.BeginInit();
-                        bitmapImage.StreamSource = memoryStream;
-                        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                        bitmapImage.EndInit();
-
-                        var brush = new ImageBrush(bitmapImage);
-                        ClientController.MainWindow.RemoteScreenDisplay.Background = brush;
+                        strBuilder.Append(frag);
                     }
-                });
 
-                PicFrags.Clear();
+                    ClientController.MainWindow.Dispatcher.Invoke(() =>
+                    {
+                        lock (_thisLock)
+                        {
+                            byte[] pictureData = Convert.FromBase64String(strBuilder.ToString());
+                            using (var memoryStream = new MemoryStream(pictureData))
+                            {
+                                memoryStream.Position = 0;
+                                BitmapImage bitmapImage = new BitmapImage();
+                                bitmapImage.BeginInit();
+                                bitmapImage.StreamSource = memoryStream;
+                                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                                bitmapImage.EndInit();
+
+                                var brush = new ImageBrush(bitmapImage);
+                                ClientController.MainWindow.RemoteScreenDisplay.Background = brush;
+                            }
+                        }
+                    });
+
+                    PicFrags.Clear();
             }
         }
     }
