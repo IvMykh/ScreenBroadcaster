@@ -31,44 +31,45 @@ namespace ScreenBroadcaster.Client.Controllers
         // Concrete commands handlers.
         private void receiveNewPicture(JObject serverParam)
         {
-                var nextPicFrag = (string)serverParam.SelectToken("nextPicFrag");
-                var isLast = (bool)serverParam.SelectToken("isLast");
-                var fragNumber = (int)serverParam.SelectToken("fragNumber");
+            var nextPicFrag = (string)serverParam.SelectToken("nextPicFrag");
+            var isLast = (bool)serverParam.SelectToken("isLast");
+            var fragNumber = (int)serverParam.SelectToken("fragNumber");
 
-                if (fragNumber == PicFrags.Count)
+            if (fragNumber == PicFrags.Count)
+            {
+                PicFrags.Add(nextPicFrag);
+            }
+
+            if (isLast && PicFrags.Count > 0)
+            {
+                var strBuilder = new StringBuilder(PicFrags.Count * ScreenCapturer.CharsInBlock);
+                foreach (var frag in PicFrags)
                 {
-                    PicFrags.Add(nextPicFrag);
+                    strBuilder.Append(frag);
                 }
 
-                if (isLast && PicFrags.Count > 0)
+                ClientController.MainWindow.Dispatcher.Invoke(() =>
                 {
-                    var strBuilder = new StringBuilder(PicFrags.Count * ScreenCapturer.CharsInBlock);
-                    foreach (var frag in PicFrags)
-                    {
-                        strBuilder.Append(frag);
-                    }
-
-                    ClientController.MainWindow.Dispatcher.Invoke(() =>
-                    {
-                        lock (_thisLock)
+                    // not required, but so far will be commented out.
+                    //lock (_thisLock)
+                    //{
+                        byte[] pictureData = Convert.FromBase64String(strBuilder.ToString());
+                        using (var memoryStream = new MemoryStream(pictureData))
                         {
-                            byte[] pictureData = Convert.FromBase64String(strBuilder.ToString());
-                            using (var memoryStream = new MemoryStream(pictureData))
-                            {
-                                memoryStream.Position = 0;
-                                BitmapImage bitmapImage = new BitmapImage();
-                                bitmapImage.BeginInit();
-                                bitmapImage.StreamSource = memoryStream;
-                                bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                                bitmapImage.EndInit();
+                            memoryStream.Position = 0;
+                            BitmapImage bitmapImage = new BitmapImage();
+                            bitmapImage.BeginInit();
+                            bitmapImage.StreamSource = memoryStream;
+                            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                            bitmapImage.EndInit();
 
-                                var brush = new ImageBrush(bitmapImage);
-                                ClientController.MainWindow.RemoteScreenDisplay.Background = brush;
-                            }
+                            var brush = new ImageBrush(bitmapImage);
+                            ClientController.MainWindow.RemoteScreenDisplay.Background = brush;
                         }
-                    });
+                    //}
+                });
 
-                    PicFrags.Clear();
+                PicFrags.Clear();
             }
         }
     }

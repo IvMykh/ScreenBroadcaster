@@ -62,7 +62,7 @@ namespace ScreenBroadcaster.Server.Hubs
             serverParam["caption"] = Resources.RegistrationOkCaption;
             serverParam["userType"] = "Broadcaster";
 
-#if DEBUG
+//#if DEBUG
             var clipboardOpThread = new Thread(() => 
                 {
                     Clipboard.Clear();
@@ -72,7 +72,7 @@ namespace ScreenBroadcaster.Server.Hubs
 
             clipboardOpThread.SetApartmentState(ApartmentState.STA);
             clipboardOpThread.Start();
-#endif
+//#endif
 
             await Clients.Caller.ExecuteCommand(ServerToClientGeneralCommand.ReportSuccessfulRegistration, serverParam);
         }      

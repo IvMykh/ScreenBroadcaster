@@ -65,7 +65,7 @@ namespace ScreenBroadcaster.Client.Controllers.Helpers
             {
                 var sourceUpLeftPoint = new System.Drawing.Point(0, 0);
                 var destUpLeftPoint = new System.Drawing.Point(0, 0);
-                graphics.CopyFromScreen(sourceUpLeftPoint, destUpLeftPoint, Screenshot.Size, CopyPixelOperation.SourceCopy);
+                graphics.CopyFromScreen(sourceUpLeftPoint, destUpLeftPoint, Screenshot.Size);
             }
 
             ScreenshotAsBase64Strings = getScreenshotAsBase64Strings();

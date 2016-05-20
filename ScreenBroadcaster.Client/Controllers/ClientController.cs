@@ -45,9 +45,9 @@ namespace ScreenBroadcaster.Client.Controllers
             GenCommandsExecutor = new GeneralCommandsExecutor(this);
             PicCommandsExecutor = new PictureCommandsExecutor(this);
 
-#if DEBUG
+//#if DEBUG
             MainWindow.UserNameTextBox.Text = Resources.DefaultUserName;
-#endif
+//#endif
         }
 
         private void setClientMainWindowEventsHandlers()
