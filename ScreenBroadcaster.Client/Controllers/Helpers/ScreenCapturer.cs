@@ -24,12 +24,12 @@ namespace ScreenBroadcaster.Client.Controllers.Helpers
 
 
 
-        private object _thisLock;
-        private ImageCodecInfo _jpgEncoder;
-        private EncoderParameters _myEncoderParameters;
+        private object              _thisLock;
+        private ImageCodecInfo      _jpgEncoder;
+        private EncoderParameters   _myEncoderParameters;
 
-        public Image    Screenshot                  { get; private set; }
-        public string[] ScreenshotAsBase64Strings   { get; private set; }
+        public Image                Screenshot                  { get; private set; }
+        public string[]             ScreenshotAsBase64Strings   { get; private set; }
 
         public ScreenCapturer()
         {

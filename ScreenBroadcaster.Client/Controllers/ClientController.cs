@@ -45,9 +45,9 @@ namespace ScreenBroadcaster.Client.Controllers
             GenCommandsExecutor = new GeneralCommandsExecutor(this);
             PicCommandsExecutor = new PictureCommandsExecutor(this);
 
-//#if DEBUG
+#if DEBUG
             MainWindow.UserNameTextBox.Text = Resources.DefaultUserName;
-//#endif
+#endif
         }
 
         private void setClientMainWindowEventsHandlers()
@@ -55,6 +55,7 @@ namespace ScreenBroadcaster.Client.Controllers
             MainWindow.Closing                          += mainWindow_Closing;
             MainWindow.UserNameTextBox.TextChanged      += UserNameTextBox_TextChanged;
             MainWindow.BroadcasterIdTextBox.TextChanged += BroadcasterIdTextBox_TextChanged;
+            MainWindow.GenerationFreqNud.ValueChanged   += GenerationFreqNud_ValueChanged;
 
             MainWindow.BroadcastButton.Click            += BroadcastButton_Click;
             MainWindow.ReceiveButton.Click              += ReceiveButton_Click;
@@ -195,6 +196,20 @@ namespace ScreenBroadcaster.Client.Controllers
                 BroadcasterID = null;
             }
         }
+        
+        private async void GenerationFreqNud_ValueChanged(object sender, RoutedPropertyChangedEventArgs<decimal> e)
+        {
+            int newFreq = (int)e.NewValue;
+            if (sender != null)
+            {
+                var param = new JObject();
+                param["bcaster"] = BroadcasterID;
+                param["newFreq"] = newFreq;
+
+                await executeSafe(ClientToServerGeneralCommand.SetNewGenerationFreq, param);
+            }
+        }
+
 
         // Other methods.
         private async Task<bool> ConnectAsync()

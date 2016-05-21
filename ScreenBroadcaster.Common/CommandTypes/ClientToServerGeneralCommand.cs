@@ -15,8 +15,6 @@ namespace ScreenBroadcaster.Common.CommandTypes
         StopBroadcasting,
         SendMessage,
 
-        // for pictures
-        GiveNextPictureFragment,
-        TakeNextPictureFragment
+        SetNewGenerationFreq
     }
 }

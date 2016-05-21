@@ -34,6 +34,7 @@ namespace ScreenBroadcaster.Server.Hubs
             handlers[ClientToServerGeneralCommand.StopReceiving]            = stopReceiving;
             handlers[ClientToServerGeneralCommand.StopBroadcasting]         = stopBroadcasting;
             handlers[ClientToServerGeneralCommand.SendMessage]              = sendMessage;
+            handlers[ClientToServerGeneralCommand.SetNewGenerationFreq]     = setNewGenerationFreq;
 
             // тут додати обробника для відповідної команди від клієнта.
             
@@ -62,7 +63,7 @@ namespace ScreenBroadcaster.Server.Hubs
             serverParam["caption"] = Resources.RegistrationOkCaption;
             serverParam["userType"] = "Broadcaster";
 
-//#if DEBUG
+#if DEBUG
             var clipboardOpThread = new Thread(() => 
                 {
                     Clipboard.Clear();
@@ -72,7 +73,7 @@ namespace ScreenBroadcaster.Server.Hubs
 
             clipboardOpThread.SetApartmentState(ApartmentState.STA);
             clipboardOpThread.Start();
-//#endif
+#endif
 
             await Clients.Caller.ExecuteCommand(ServerToClientGeneralCommand.ReportSuccessfulRegistration, serverParam);
         }      
@@ -216,6 +217,21 @@ namespace ScreenBroadcaster.Server.Hubs
             
             await Clients.Clients(receiversIDsOnHub).ExecuteCommand(
                 ServerToClientGeneralCommand.ReceiveMessage, clientParam);      
+        }
+        private async void setNewGenerationFreq(JObject clientParam)
+        {
+            var bcasterId = (Guid)clientParam.SelectToken("bcaster");
+            var newFreq = (int)clientParam.SelectToken("newFreq");
+
+            List<Guid> receivers = null;
+            bool keyExists = Data.BcastRecDictionary.TryGetValue(bcasterId, out receivers);
+            if (keyExists)
+            {
+                User bcaster = Data.Users.Find(user => user.ID.Equals(bcasterId));
+
+                await Clients.Client(bcaster.ClientIdOnHub).ExecuteCommand(
+                    ServerToClientGeneralCommand.ChangeGenerationFrequency, clientParam);
+            }
         }
     }
 }

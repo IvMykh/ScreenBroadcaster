@@ -19,7 +19,13 @@ namespace ScreenBroadcaster.Client.Controllers
             {
                 setupHandlers();
 
-                var picGenFreq = int.Parse(ConfigurationManager.AppSettings["PictureGenerationFrequency"]);
+                int initGenFreq = (int)clientController.MainWindow.GenerationFreqNud.Value;
+
+                /* Old version.
+                //int.Parse(ConfigurationManager.AppSettings["PictureGenerationFrequency"]);
+                */
+
+                 var picGenFreq = int.Parse(Resources.MilisecondsInSecond) / initGenFreq;
                 _pictureSender = new PictureSender(picGenFreq, clientController);
             }
 
@@ -37,10 +43,9 @@ namespace ScreenBroadcaster.Client.Controllers
                 Handlers[ServerToClientGeneralCommand.NotifyStopBroadcasting]           = notifyStopBroadcasting;
                 Handlers[ServerToClientGeneralCommand.ForceStopReceiving]               = forceStopReceiving;
                 Handlers[ServerToClientGeneralCommand.ReceiveMessage]                   = sendMessage;
+                Handlers[ServerToClientGeneralCommand.ChangeGenerationFrequency]        = changeGenerationFrequency;
                 // тут додати обробника відповідної команди від сервера до клієнта.
             }
-
-
             
             private void reportSuccessfulRegistration(JObject serverParam)
             {
@@ -71,7 +76,7 @@ namespace ScreenBroadcaster.Client.Controllers
                 ClientController.MainWindow.Dispatcher.Invoke(() =>
                     {
                         ClientController.MainWindow.LogRichTextBox.AppendText(
-                            string.Format(Resources.ReceiverStateChangedMsgFormat + '\r', recName, recId, state));
+                            string.Format(Resources.ReceiverStateChangedMsgFormat + '\r', recName, state));
                     });
 
                 var specialState = (BroadcastSpecialState)Enum.Parse(
@@ -141,6 +146,12 @@ namespace ScreenBroadcaster.Client.Controllers
                             String.Format(Resources.ChatMsgFormat, name, text + '\r'));
                     }
                 );
+            }
+
+            private void changeGenerationFrequency(JObject serverParam)
+            {
+                int newFreq = (int)serverParam.SelectToken("newFreq");
+                _pictureSender.GenerationFrequency = int.Parse(Resources.MilisecondsInSecond) / newFreq;
             }
         }
     }

@@ -16,8 +16,6 @@ namespace ScreenBroadcaster.Common.CommandTypes
         ForceStopReceiving,
         ReceiveMessage,
 
-        // for pictures
-        MakePictureFragment,
-        ReceivePictureFragment
+        ChangeGenerationFrequency
     }
 }

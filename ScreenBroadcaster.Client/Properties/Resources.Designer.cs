@@ -61,6 +61,16 @@ namespace ScreenBroadcaster.Client.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon _2comps {
+            get {
+                object obj = ResourceManager.GetObject("_2comps", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specified broadcaster does not exist anymore..
         /// </summary>
         internal static string BcasterDoesNotExistMsg {
@@ -115,6 +125,16 @@ namespace ScreenBroadcaster.Client.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon client {
+            get {
+                object obj = ResourceManager.GetObject("client", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Command execution error!.
         /// </summary>
         internal static string CommandExecErrorCaption {
@@ -142,6 +162,15 @@ namespace ScreenBroadcaster.Client.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to 1000.
+        /// </summary>
+        internal static string MilisecondsInSecond {
+            get {
+                return ResourceManager.GetString("MilisecondsInSecond", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Operation failed due to server connection issues..
         /// </summary>
         internal static string OperationFailedMsg {
@@ -160,7 +189,7 @@ namespace ScreenBroadcaster.Client.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to User {0} ({1}) {2} your broadcast..
+        ///   Looks up a localized string similar to User {0} {1} your broadcast..
         /// </summary>
         internal static string ReceiverStateChangedMsgFormat {
             get {

@@ -135,6 +135,10 @@
   <data name="ChatMsgFormat" xml:space="preserve">
     <value>{0}: {1}</value>
   </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="client" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\client.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="CommandExecErrorCaption" xml:space="preserve">
     <value>Command execution error!</value>
   </data>
@@ -144,6 +148,9 @@
   <data name="HttpRequestExcMsg" xml:space="preserve">
     <value>Unable to connect to server: Start server before connecting clients.</value>
   </data>
+  <data name="MilisecondsInSecond" xml:space="preserve">
+    <value>1000</value>
+  </data>
   <data name="OperationFailedMsg" xml:space="preserve">
     <value>Operation failed due to server connection issues.</value>
   </data>
@@ -151,7 +158,7 @@
     <value>125</value>
   </data>
   <data name="ReceiverStateChangedMsgFormat" xml:space="preserve">
-    <value>User {0} ({1}) {2} your broadcast.</value>
+    <value>User {0} {1} your broadcast.</value>
   </data>
   <data name="ReceivingStopOkMsg" xml:space="preserve">
     <value>Receiving has been successfully stopped.</value>
@@ -173,5 +180,8 @@
   </data>
   <data name="UserNameErrorMsg" xml:space="preserve">
     <value>You must specify user name.</value>
+  </data>
+  <data name="_2comps" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\2comps.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

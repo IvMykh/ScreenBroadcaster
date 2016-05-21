@@ -97,6 +97,16 @@ namespace ScreenBroadcaster.Server.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon Console {
+            get {
+                object obj = ResourceManager.GetObject("Console", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You have been successfully registered as a Receiver.
         /// </summary>
         internal static string ReceiverRegistrationOkMsg {

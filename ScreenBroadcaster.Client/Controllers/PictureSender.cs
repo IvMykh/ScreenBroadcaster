@@ -14,25 +14,40 @@ namespace ScreenBroadcaster.Client.Controllers
             : IDisposable
         {
             // Instance members.
-            private object          _thisLock = new object();
+            private object          _thisLock;
             private Timer           _timer;
+            private int             _generationFreq;
 
             public ClientController ClientController    { get; private set; }
             public ScreenCapturer   ScreenCapturer      { get; private set; }
             public int              CurrFragment        { get; private set; }
-            public int              GenerationFrequency { get; private set; }
             public bool             IsDisposed          { get; private set; }
+
+            public int              GenerationFrequency 
+            {
+                get { return _generationFreq; }
+                set 
+                {
+                    _generationFreq = value;
+                    if (!IsDisposed)
+                    {
+                        Stop();
+                        Start();
+                    }
+                }
+            }
 
             public PictureSender(int generationFrequency, ClientController controller)
             {
+                _thisLock           = new object();
                 _timer              = null;
                 
                 ClientController    = controller;
                 ScreenCapturer      = new ScreenCapturer();
                 CurrFragment        = 0;
 
-                GenerationFrequency = generationFrequency;
                 IsDisposed          = true;
+                GenerationFrequency = generationFrequency;
             }
 
             public void Start()
